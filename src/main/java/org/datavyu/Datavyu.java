@@ -904,8 +904,12 @@ public final class Datavyu extends SingleFrameApplication
 
                         }
 
+                        // Get name of spreadsheet.  Check in both project and datastore.
+                        String projName = sp.getProjectController().getProjectName();
+                        if(projName==null) projName = sp.getDatastore().getName();
+
                         int selection = JOptionPane.showOptionDialog(mainFrame,
-                                rMap.getString("UnsavedDialog.message"),
+                                rMap.getString("UnsavedDialog.message",projName),
                                 rMap.getString("UnsavedDialog.title"),
                                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                                 null, options, yes);
@@ -970,8 +974,12 @@ public final class Datavyu extends SingleFrameApplication
 
             }
 
+            // Get project name.
+            String projName = sp.getProjectController().getProjectName();
+            if(projName==null) projName = sp.getDatastore().getName();
+            
             int selection = JOptionPane.showOptionDialog(mainFrame,
-                    rMap.getString("UnsavedDialog.tabmessage"),
+                    rMap.getString("UnsavedDialog.tabmessage", projName),
                     rMap.getString("UnsavedDialog.title"),
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, options, yes);
