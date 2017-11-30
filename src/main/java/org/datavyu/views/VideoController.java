@@ -1883,12 +1883,6 @@ public final class VideoController extends DatavyuDialog
             long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
             long nextTime = mul * stepSize;
 
-            long mod = clock.getTime() % stepSize;
-
-            if (mod != 0) {
-                nextTime = -mod;
-            }
-
             /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
             if ((clock.getTime() + nextTime) > playbackModel.getStartTime()) {
                 stopAction();
@@ -1922,13 +1916,6 @@ public final class VideoController extends DatavyuDialog
 
             long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
             long nextTime = (long) (mul * stepSize);
-
-            /* BugzID:1544 - Preserve precision - force jog to frame markers. */
-            long mod = (clock.getTime() % stepSize);
-
-            if (mod != 0) {
-                nextTime = nextTime + stepSize - mod;
-            }
 
             /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
             if ((clock.getTime() + nextTime) < playbackModel.getEndTime()) {
