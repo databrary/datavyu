@@ -66,10 +66,10 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     private static DatavyuView datavyuView;
 
-    /** The view to use for the video controller */
+    /** The video controller */
     private static VideoController videoController;
 
-    /** The project controller instance */
+    /** The project controller */
     private static ProjectController projectController;
 
     // Load native libraries

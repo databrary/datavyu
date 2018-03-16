@@ -18,11 +18,10 @@ import com.apple.eawt.event.*;
 import com.google.common.collect.Maps;
 import com.sun.jna.Platform;
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StrSubstitutor;
 import org.datavyu.Datavyu;
 import org.datavyu.event.component.*;
-import org.datavyu.event.component.CarriageEvent.EventType;
-import org.datavyu.event.component.TracksControllerEvent.TracksEvent;
+import org.datavyu.event.component.TracksControllerEvent.EventType;
 import org.datavyu.models.Identifier;
 import org.datavyu.models.component.*;
 import org.datavyu.plugins.CustomActions;
@@ -37,6 +36,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
@@ -44,37 +44,36 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * This class manages the tracks information interface.
+ * This class manages tracks information
  */
 public final class MixerController implements PropertyChangeListener,
         CarriageEventListener, AdjustmentListener, TimescaleListener {
 
     public static final long DEFAULT_DURATION = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
 
-    public static final double DEFAULT_ZOOM = 0.0;
+    private static final double DEFAULT_ZOOM = 0.0;
 
-    public static final int V_SCROLL_WIDTH = 17;
+    private final int V_SCROLL_WIDTH = 17;
 
-    public static final int H_SCROLL_HEIGHT = 17;
+    private static final int H_SCROLL_HEIGHT = 17;
 
-    public static final int REGION_EDGE_PADDING = 5;
+    private static final int REGION_EDGE_PADDING = 5;
 
-    public static final int MIXER_MIN_WIDTH = 785;
+    private static final int MIXER_MIN_WIDTH = 785;
 
-    public static final int FILLER_DEPTH_ORDER = 0;
+    private static final int FILLER_DEPTH_ORDER = 0;
 
-    public static final int TIME_SCALE_DEPTH_ORDER = 5;
+    private static final int TIME_SCALE_DEPTH_ORDER = 5;
 
-    public static final int TRACKS_DEPTH_ORDER = 10;
+    private static final int TRACKS_DEPTH_ORDER = 10;
 
-    public static final int REGION_DEPTH_ORDER = 20;
+    private static final int REGION_DEPTH_ORDER = 20;
 
-    public static final int NEEDLE_DEPTH_ORDER = 30;
+    private static final int NEEDLE_DEPTH_ORDER = 30;
 
-    public static final int MARKER_DEPTH_ORDER = 50;
+    private static final int MARKER_DEPTH_ORDER = 50;
 
-    public static final int TRACKS_SCROLL_BAR_DEPTH_ORDER = 60;
-
+    private static final int TRACKS_SCROLL_BAR_DEPTH_ORDER = 60;
 
     private final int TRACKS_SCROLL_BAR_RANGE = 1000000;
 
@@ -319,7 +318,7 @@ public final class MixerController implements PropertyChangeListener,
 
         // Set up the timescale layout
         {
-            JComponent timescaleView = timescaleController.getView();
+            JComponent timescaleView = timescaleController.getTimescaleComponent();
 
             Map<String, String> constraints = Maps.newHashMap();
             constraints.put("x", Integer.toString(TimescaleConstants.XPOS_ABS));
@@ -386,7 +385,7 @@ public final class MixerController implements PropertyChangeListener,
 
         // Set up the timing needle's layout
         {
-            JComponent needleView = needleController.getView();
+            JComponent needleView = needleController.getNeedleComponent();
 
             Map<String, String> constraints = Maps.newHashMap();
 
@@ -469,8 +468,7 @@ public final class MixerController implements PropertyChangeListener,
             constraints.put("width", Integer.toString(MIXER_MIN_WIDTH));
             constraints.put("height", Integer.toString(layeredPaneHeight));
 
-            String template =
-                    "growx, span ${span}, w ${width}::, h ${height}::, wrap";
+            String template = "growx, span ${span}, w ${width}::, h ${height}::, wrap";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
             tracksPanel.add(layeredPane, sub.replace(template));
@@ -487,33 +485,20 @@ public final class MixerController implements PropertyChangeListener,
     }
 
     /**
-     * Sets the longest data feed duration.
-     *
-     * @param newMaxEnd duration in milliseconds
-     */
-    public void setMaxEnd(final long newMaxEnd, final boolean resetViewportWindow) {
-        viewportModel.setViewportMaxEnd(newMaxEnd, resetViewportWindow);
-        if (resetViewportWindow) {
-            regionModel.resetPlaybackRegion();
-        }
-    }
-
-    /**
      * Add a new track to the interface.
      *
      * @param id           Identifier of the track.
      * @param icon         Icon associated with the track.
      * @param mediaPath    Absolute path to the media file.
-     * @param trackName    Name of the track.
      * @param duration     The total duration of the track in milliseconds.
      * @param offset       The amount of playback offset in milliseconds.
      * @param trackPainter The track painter to use.
      */
     public void addNewTrack(final Identifier id, final ImageIcon icon,
-                            final String mediaPath, final String trackName, final long duration,
+                            final File mediaPath, final long duration,
                             final long offset, final TrackPainter trackPainter) {
 
-        // Check if the scale needs to be updated.
+        // Check if the scale needs to be updated
         final long trackEnd = duration + offset;
         final ViewportState viewport = viewportModel.getViewport();
 
@@ -522,7 +507,7 @@ public final class MixerController implements PropertyChangeListener,
             regionModel.resetPlaybackRegion();
         }
 
-        tracksEditorController.addNewTrack(id, icon, trackName, mediaPath, duration, offset, this, trackPainter);
+        tracksEditorController.addNewTrack(id, icon, mediaPath, duration, offset, this, trackPainter);
         tracksScrollPane.validate();
 
         updateGlobalLockToggle();
@@ -592,19 +577,17 @@ public final class MixerController implements PropertyChangeListener,
     }
 
     /**
-     * Zooms into the displayed region and re-adjusts the timing needle
-     * accordingly.
+     * Zooms into the displayed region and re-adjusts the timing needle accordingly
      *
      * @param evt
      */
-    public void zoomToRegion(final ActionEvent evt) {
+    private void zoomToRegion(final ActionEvent evt) {
         final ViewportState viewport = viewportModel.getViewport();
         final RegionState region = regionModel.getRegion();
 
         if (region.getRegionDuration() >= 1) {
             final int percentOfRegionToPadOutsideMarkers = 5;
-            assert (percentOfRegionToPadOutsideMarkers >= 0)
-                    && (percentOfRegionToPadOutsideMarkers <= 100);
+            assert (percentOfRegionToPadOutsideMarkers >= 0) && (percentOfRegionToPadOutsideMarkers <= 100);
 
             final long displayedAreaStart = Math.max(region.getRegionStart()
                     - (region.getRegionDuration()
@@ -650,13 +633,6 @@ public final class MixerController implements PropertyChangeListener,
         tracksPanel.repaint();
 
         updateGlobalLockToggle();
-    }
-
-    /**
-     * @return all track models used to represent the UI.
-     */
-    public Iterable<TrackModel> getAllTrackModels() {
-        return tracksEditorController.getAllTrackModels();
     }
 
     public TrackModel getTrackModel(final Identifier id) {
@@ -869,7 +845,7 @@ public final class MixerController implements PropertyChangeListener,
             newEvent = e;
         }
 
-        fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, newEvent);
+        fireTracksControllerEvent(EventType.CARRIAGE_EVENT, newEvent);
         tracksPanel.invalidate();
         tracksPanel.repaint();
     }
@@ -886,9 +862,9 @@ public final class MixerController implements PropertyChangeListener,
         CarriageEvent newEvent = new CarriageEvent(carriageEvent.getSource(),
                 carriageEvent.getTrackId(), carriageEvent.getOffset(), trackController.getMarkers(),
                 carriageEvent.getDuration(), carriageEvent.getTime(),
-                EventType.MARKER_CHANGED, carriageEvent.hasModifiers());
+                CarriageEvent.EventType.MARKER_CHANGED, carriageEvent.hasModifiers());
 
-        fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, newEvent);
+        fireTracksControllerEvent(EventType.CARRIAGE_EVENT, newEvent);
     }
 
     /**
@@ -897,7 +873,7 @@ public final class MixerController implements PropertyChangeListener,
      * @param carriageEvent the event to handle
      */
     public void saveMarker(final CarriageEvent carriageEvent) {
-        fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, carriageEvent);
+        fireTracksControllerEvent(EventType.CARRIAGE_EVENT, carriageEvent);
     }
 
     /**
@@ -906,7 +882,7 @@ public final class MixerController implements PropertyChangeListener,
      * @param e the event to handle
      */
     public void lockStateChanged(final CarriageEvent e) {
-        fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, e);
+        fireTracksControllerEvent(EventType.CARRIAGE_EVENT, e);
         updateGlobalLockToggle();
     }
 
@@ -920,7 +896,7 @@ public final class MixerController implements PropertyChangeListener,
     }
 
     public void jumpToTime(final TimescaleEvent e) {
-        fireTracksControllerEvent(TracksEvent.TIMESCALE_EVENT, e);
+        fireTracksControllerEvent(EventType.TIMESCALE_EVENT, e);
     }
 
     /**
@@ -963,7 +939,7 @@ public final class MixerController implements PropertyChangeListener,
      * @param tracksEvent The event to handle
      * @param eventObject The event object to repackage
      */
-    private void fireTracksControllerEvent(final TracksEvent tracksEvent, final EventObject eventObject) {
+    private void fireTracksControllerEvent(final EventType tracksEvent, final EventObject eventObject) {
         TracksControllerEvent e = new TracksControllerEvent(this, tracksEvent, eventObject);
         Object[] listeners = eventListenerList.getListenerList();
         synchronized (this) {
@@ -977,8 +953,7 @@ public final class MixerController implements PropertyChangeListener,
         }
     }
 
-    private void handleViewportChanged(final ViewportState oldViewport,
-                                       final ViewportState newViewport) {
+    private void handleViewportChanged(final ViewportState newViewport) {
         runInEDT(new Runnable() {
             @Override
             public void run() {
@@ -993,13 +968,10 @@ public final class MixerController implements PropertyChangeListener,
     public void propertyChange(final PropertyChangeEvent evt) {
 
         if (evt.getSource() == mixerModel.getViewportModel()) {
-            final ViewportState oldViewport =
-                    (evt.getOldValue() instanceof ViewportState)
-                            ? (ViewportState) evt.getOldValue() : null;
             final ViewportState newViewport =
                     (evt.getNewValue() instanceof ViewportState)
                             ? (ViewportState) evt.getNewValue() : null;
-            handleViewportChanged(oldViewport, newViewport);
+            handleViewportChanged(newViewport);
         }
     }
 
@@ -1009,15 +981,15 @@ public final class MixerController implements PropertyChangeListener,
         if (Double.isNaN(viewport.getResolution())) {
             viewportModel.setViewport(viewport.getViewStart(),
                     viewport.getViewEnd(), viewport.getMaxEnd(),
-                    timescaleController.getView().getWidth());
+                    timescaleController.getTimescaleComponent().getWidth());
         } else {
             viewportModel.resizeViewport(viewportModel.getViewport()
-                    .getViewStart(), timescaleController.getView().getWidth());
+                    .getViewStart(), timescaleController.getTimescaleComponent().getWidth());
         }
     }
 
     /**
-     * Handles component resizing.
+     * Handles component resizing
      */
     private final class SizeHandler extends ComponentAdapter {
         @Override

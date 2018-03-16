@@ -287,6 +287,18 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
         return selectedCells;
     }
 
+    public SpreadsheetCell getSelectedCell(){
+        List<SpreadsheetCell> cells = getCellsTemporally();
+        SpreadsheetCell selectedCell = null;
+        for (SpreadsheetCell cell : cells){
+            if(cell.getCell().isSelected()){
+                selectedCell = cell;
+                break;
+            }
+        }
+        return selectedCell;
+    }
+
     /**
      * Dispatches the key event to the desired components.
      *
@@ -296,155 +308,54 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      */
     @Override
     public boolean dispatchKeyEvent(final KeyEvent e) {
+        if ((e.getID() == KeyEvent.KEY_PRESSED) && ((e.getKeyCode() == KeyEvent.VK_UP)
+                || (e.getKeyCode() == KeyEvent.VK_DOWN))) {
+            SpreadsheetCell selectedCell = getSelectedCell();
+            if (getSelectedCell() != null) {
 
-        // Quick filter - if we aren't dealing with a key press or up and down
-        // arrow. Forget about it - just chuck it back to Java to deal with.
-        if ((e.getID() != KeyEvent.KEY_PRESSED) && ((e.getKeyCode() != KeyEvent.VK_UP)
-                || (e.getKeyCode() != KeyEvent.VK_DOWN))) {
-            return false;
-        }
+                int cellId = cells.indexOf(selectedCell);
 
-        SpreadsheetCell[] components = this.getCellsTemporally().toArray(new SpreadsheetCell[0]);
-        int nCells = components.length;
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
 
-        // For each of the cells in the column - see if one has focus.
-        for (int iCell = 0; iCell < nCells; iCell++) {
+                    if (0 <= cellId - 1 && cellId - 1 < cells.size()) {
 
-            // What is this about? eliminate? haven't found a way to make this happen
-            if (components[iCell].isFocusOwner() && components[iCell].getClass().equals(JButton.class)) {
+                        selectedCell.getCell().setHighlighted(false);
+                        selectedCell.getCell().setSelected(false);
+                        requestFocus();
 
-                if ((e.getKeyCode() == KeyEvent.VK_UP) && (iCell > 0)) {
-                    SpreadsheetCell sc = (SpreadsheetCell) components[iCell - 1];
-                    EditorTracker et = sc.getDataView().getEdTracker();
-                    EditorComponent ec = et.getCurrentEditor();
-                    try {
+                        SpreadsheetCell cellUP = cells.get(cellId - 1);
 
-                        // Determine if we are at the top of a multi-lined cell,
-                        // if we are not on the top line - pressing up should
-                        // select the line above.
-                        JTextArea a = (JTextArea) ec.getParentComponent();
+                        cellUP.getCell().setHighlighted(true);
+                        cellUP.requestFocus();
+                        cellUP.getCell().setSelected(true);
 
-                        //if we are in top line of this editor then go up a cell
-                        if (a.getLineOfOffset(a.getCaretPosition()) == 0) {
-         
-                            et.setEditor(ec);
+                        e.consume();
 
+                        return true;
 
-                            sc.requestFocus();
-                            sc.getCell().setHighlighted(true);
-                            cellSelectionL.setHighlightedCell(sc);
-
-                            e.consume();
-
-                            return true;
-                        }
-                    } catch (BadLocationException be) {
-                        logger.error("BadLocation on arrow up", be);
                     }
                 }
-                return false;
-            }
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 
-            // The current cell has focus.
-            if (components[iCell].isFocusOwner() && components[iCell].getClass().equals(SpreadsheetCell.class)) {
+                    if (0 <= cellId + 1 && cellId + 1 < cells.size()) {
 
-                // Get the current editor tracker and component for the cell
-                // that has focus.
-                SpreadsheetCell scCur = (SpreadsheetCell) components[iCell];
-                EditorTracker etCur = scCur.getDataView().getEdTracker();
-                EditorComponent ecCur = etCur.getCurrentEditor();
+                        selectedCell.getCell().setHighlighted(false);
+                        selectedCell.getCell().setSelected(false);
+                        requestFocus();
 
-                // Get the caret position within the active editor component.
-                int relativePos = etCur.getCurrentEditor().getCaretPosition();
-                int absolutePos = scCur.getDataView().getCaretPosition();
-                JTextArea a = (JTextArea) ecCur.getParentComponent();
+                        SpreadsheetCell cellDOWN = cells.get(cellId + 1);
 
-                // The key stroke is up - select the editor component in the
-                // cell above, setting the caret position to what we just found
-                // in the current cell.
-                if ((e.getKeyCode() == KeyEvent.VK_UP) && (iCell > 0)) {
-                    try {
-                        // Determine if we are at the top of a multi-lined cell,
-                        // if we are not on the top line - pressing up should
-                        // select the line above.
-                        if (a.getLineOfOffset(a.getCaretPosition()) == 0 && components[iCell - 1] instanceof SpreadsheetCell) {
-                            SpreadsheetCell scNew = (SpreadsheetCell) components[iCell - 1];
-                            EditorTracker etNew = scNew.getDataView().getEdTracker();
-                            EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
-                            etNew.setEditor(ecNew);
-                            
-                            scNew.requestFocus();
-                            scNew.getCell().setHighlighted(true);
-                            cellSelectionL.setHighlightedCell(scNew);
+                        cellDOWN.getCell().setHighlighted(true);
+                        cellDOWN.requestFocus();
+                        cellDOWN.getCell().setSelected(true);
 
-                            e.consume();
+                        e.consume();
 
-                            return true;
-                        }
-                    } catch (BadLocationException be) {
-                        logger.error("BadLocation on arrow up", be);
+                        return true;
                     }
                 }
-                if ((e.getKeyCode() == KeyEvent.VK_UP) && (iCell == 0)) {
-                    try {
-                        if (a.getLineOfOffset(a.getCaretPosition()) == 0) {
-                            //skip to first arg of current cell
-                            etCur = scCur.getDataView().getEdTracker();
-                            etCur.setEditor(etCur.firstEditor());
-                            return true;
-                        }
-                    } catch (BadLocationException be){
-                        logger.error("BadLocation on arrow up", be);
-                    }
-                }
-
-                // The key stroke is down - select the editor component in the
-                // cell below, setting the caret position to what we found from
-                // the current cell.
-                if ((e.getKeyCode() == KeyEvent.VK_DOWN) && ((iCell + 1) < nCells)) {
-                    try {
-                        // Determine if we are at the bottom of a multi-lined
-                        // cell, if we are not on the bottom line - pressing
-                        // down should select the line below.
-                        if ((a.getLineOfOffset(a.getCaretPosition()) + 1) >= a.getLineCount()) {
-                            components[iCell + 1].requestFocus();
-                            if (components[iCell + 1] instanceof SpreadsheetCell) {
-                                SpreadsheetCell scNew = (SpreadsheetCell) components[iCell + 1];
-                                EditorTracker etNew = scNew.getDataView().getEdTracker();
-                                EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
-                                etNew.setEditor(ecNew);
-                                
-                                scNew.requestFocus();
-                                scNew.getCell().setHighlighted(true);
-                                cellSelectionL.setHighlightedCell(scNew);
-                            } else {
-                                scCur.getCell().setHighlighted(false);
-                                cellSelectionL.clearCellSelection();
-                            }
-                            e.consume();
-                            return true;
-                        }
-                    } catch (BadLocationException be) {
-                        logger.error("BadLocation on arrow down", be);
-                    }
-                }
-                if ((e.getKeyCode() == KeyEvent.VK_DOWN) && ((iCell + 1) == nCells)) {
-                    try{                       
-                        if ((a.getLineOfOffset(a.getCaretPosition()) + 1) >= a.getLineCount()){
-                            //skip to first arg of current cell
-                            etCur = scCur.getDataView().getEdTracker();
-                            etCur.setEditor(etCur.lastEditor());
-                            return true;
-                        }
-                    }
-                    catch (BadLocationException be){
-                        logger.error("BadLocation on arrow down", be);
-                    }
-                }
-                return false;
             }
         }
-
         return false;
     }
 }

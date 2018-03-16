@@ -15,7 +15,7 @@
 package org.datavyu.controllers.component;
 
 import org.datavyu.models.component.*;
-import org.datavyu.views.component.NeedlePainter;
+import org.datavyu.views.component.NeedleComponent;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -26,37 +26,30 @@ import java.beans.PropertyChangeListener;
 
 
 /**
- * NeedleController is responsible for managing a NeedlePainter
+ * NeedleController is responsible for managing a NeedleComponent
  */
 public final class NeedleController implements PropertyChangeListener {
 
-    /**
-     * View
-     */
-    private final NeedlePainter view;
-
-    /**
-     * Models
-     */
-    private final NeedleModelImpl needleModel;
+    private final NeedleComponent needleComponent;
+    private final NeedleModelImpl needleModelImpl;
     private final MixerModel mixerModel;
     private final MixerController mixerController;
-    private long lastTime = 0;
 
     public NeedleController(final MixerController mixerController, final MixerModel mixer) {
         this.mixerController = mixerController;
+        // TODO: Fix this it's going to take a lot of effort because the design of the needle controller
         assert mixer.getNeedleModel() instanceof NeedleModelImpl; // UGLY HACK until this is fixed properly
-        needleModel = (NeedleModelImpl) mixer.getNeedleModel();
+        needleModelImpl = (NeedleModelImpl) mixer.getNeedleModel();
 
         this.mixerModel = mixer;
 
-        view = new NeedlePainter(needleModel);
+        needleComponent = new NeedleComponent(needleModelImpl);
 
         mixer.getViewportModel().addPropertyChangeListener(this);
 
         final NeedleListener needleListener = new NeedleListener();
-        view.addMouseListener(needleListener);
-        view.addMouseMotionListener(needleListener);
+        needleComponent.addMouseListener(needleListener);
+        needleComponent.addMouseMotionListener(needleListener);
     }
 
     /**
@@ -65,23 +58,23 @@ public final class NeedleController implements PropertyChangeListener {
      * @param currentTime
      */
     public void setCurrentTime(final long currentTime) {
-        needleModel.setCurrentTime(currentTime);
+        needleModelImpl.setCurrentTime(currentTime);
     }
 
     /**
      * @see NeedleModelImpl#setTimescaleTransitionHeight(int)
      */
     public void setTimescaleTransitionHeight(int newHeight) {
-        needleModel.setTimescaleTransitionHeight(newHeight);
-        view.repaint();
+        needleModelImpl.setTimescaleTransitionHeight(newHeight);
+        needleComponent.repaint();
     }
 
     /**
      * @see NeedleModelImpl#setZoomIndicatorHeight(int)
      */
     public void setZoomIndicatorHeight(int newHeight) {
-        needleModel.setZoomIndicatorHeight(newHeight);
-        view.repaint();
+        needleModelImpl.setZoomIndicatorHeight(newHeight);
+        needleComponent.repaint();
     }
 
     public void resetNeedlePosition() {
@@ -90,21 +83,21 @@ public final class NeedleController implements PropertyChangeListener {
     }
 
     public NeedleModel getNeedleModel() {
-        return needleModel;
+        return needleModelImpl;
     }
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         if (evt.getSource() == mixerModel.getViewportModel()) {
-            view.repaint();
+            needleComponent.repaint();
         }
     }
 
     /**
      * @return View used by the controller
      */
-    public JComponent getView() {
-        return view;
+    public JComponent getNeedleComponent() {
+        return needleComponent;
     }
 
     /**
@@ -139,18 +132,19 @@ public final class NeedleController implements PropertyChangeListener {
         @Override
         public void mouseDragged(final MouseEvent e) {
             if (viewport != null) {
-                final double dx = Math.min(Math.max(e.getX() - NeedleConstants.NEEDLE_HEAD_WIDTH - needlePositionOffsetX, 0), view.getWidth());
+                final double dx = Math.min(Math.max(e.getX()
+                        - NeedleConstants.NEEDLE_HEAD_WIDTH - needlePositionOffsetX, 0), needleComponent.getWidth());
                 long newTime = viewport.computeTimeFromXOffset(dx) + viewport.getViewStart();
                 newTime = Math.min(Math.max(newTime, viewport.getViewStart()), viewport.getViewEnd());
-                mixerController.getTimescaleController().jumpToTime(newTime, false); // TEMPORARY UGLY HACK
-                lastTime = System.currentTimeMillis();
+                mixerController.getTimescaleController().jumpToTime(newTime, false);
             }
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
             viewport = mixerModel.getViewportModel().getViewport();
-            final double currentNeedleX = viewport.computePixelXOffset(needleModel.getCurrentTime()) + NeedleConstants.NEEDLE_HEAD_WIDTH;
+            final double currentNeedleX = viewport.computePixelXOffset(needleModelImpl.getCurrentTime())
+                    + NeedleConstants.NEEDLE_HEAD_WIDTH;
             final int mousePressedX = e.getX();
             needlePositionOffsetX = mousePressedX - currentNeedleX;
         }

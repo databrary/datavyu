@@ -107,7 +107,7 @@ public final class TimeStampTextField extends JTextField
     }
 
     /**
-     * Override to address bug(?) in JTextField see java bug id 4446522 for
+     * Override to address bug(?) in JTextField see java bug identifier 4446522 for
      * discussion. Probably not the final answer but resolves the clipping of
      * first character displayed.
      *

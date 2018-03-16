@@ -19,6 +19,7 @@ import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
@@ -26,15 +27,19 @@ import org.datavyu.plugins.Plugin;
 import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
 import java.io.FileFilter;
 import java.net.URL;
 import java.util.List;
+import java.util.UUID;
 
 
 public final class NativeOSXPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.MAC);
 
+    private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.nativeosx".getBytes());
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -62,11 +67,10 @@ public final class NativeOSXPlugin implements Plugin {
     };
 
     @Override
-    public StreamViewer getNewStreamViewer(final java.awt.Frame parent,
+    public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-
         if (Platform.isMac() || Platform.isWindows()) {
-            return new NativeOSXViewerDialog(parent, modal);
+            return new NativeOSXViewerDialog(identifier, sourceFile, parent, modal);
         } else {
             return null;
         }
@@ -97,6 +101,9 @@ public final class NativeOSXPlugin implements Plugin {
     public String getPluginName() {
         return "Native OSX Video";
     }
+
+    @Override
+    public UUID getPluginUUID() {return pluginUUID; }
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {

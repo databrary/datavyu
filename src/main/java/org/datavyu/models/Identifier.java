@@ -41,6 +41,15 @@ public class Identifier {
         this.sequenceNumber = sequenceNumber;
     }
 
+    /**
+     * Get the long representation of this identifier
+     *
+     * @return Long representation
+     */
+    public long asLong() {
+        return sequenceNumber;
+    }
+
     /*
      * (non-Javadoc)
      * @see java.lang.Object#hashCode()
@@ -60,9 +69,13 @@ public class Identifier {
      */
     @Override
     public boolean equals(final Object obj) {
-        return (this == obj) || (obj != null
-                && getClass() == obj.getClass()
+        return (this == obj) || (obj != null && getClass() == obj.getClass()
                 && sequenceNumber == ((Identifier) obj).sequenceNumber);
+    }
+
+    @Override
+    public String toString() {
+        return "Identifier: " + sequenceNumber;
     }
 
     /**

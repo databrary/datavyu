@@ -66,7 +66,8 @@ public class DatavyuProjectRepresenter extends Representer {
             ViewerSetting viewerSetting = (ViewerSetting) obj;
             Map<String, Object> map = new TreeMap<String, Object>();
             map.put("feed", viewerSetting.getFilePath());
-            map.put("plugin", viewerSetting.getPluginName());
+//            map.put("plugin", viewerSetting.0());
+            map.put("plugin", viewerSetting.getPluginUUID().toString());
 
             // BugzID:2108
             map.put("classifier", viewerSetting.getPluginClassifier());

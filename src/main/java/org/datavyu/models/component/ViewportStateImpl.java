@@ -15,34 +15,25 @@
 package org.datavyu.models.component;
 
 /**
- * This model provides parameters used for determining what can be viewed on the
- * tracks information panel.
+ * Provides parameters to determine what can be viewed on the tracks
  */
 public final class ViewportStateImpl implements ViewportState {
 
-    /**
-     * The end time of the longest track (offset included) in milliseconds
-     */
+    /** The end time of the longest track (offset included) in milliseconds */
     private final long maxEnd;
 
-    /**
-     * The pixel width of a time interval
-     */
+    /** The pixel width of a time interval */
     private final double viewWidth;
 
-    /**
-     * The start time of the zoomed window
-     */
+    /** The start time of the zoomed window */
     private final long viewStart;
 
-    /**
-     * The end time of the zoomed window
-     */
+    /** The end time of the zoomed window */
     private final long viewEnd;
 
     public final static long MINIMUM_MAX_END = 60000;
 
-    public ViewportStateImpl(final long maxEnd, final double viewWidth,
+    ViewportStateImpl(final long maxEnd, final double viewWidth,
                              final long viewStart, final long viewEnd) {
         this.maxEnd = Math.max(maxEnd, MINIMUM_MAX_END);
         this.viewWidth = viewWidth;
@@ -51,7 +42,7 @@ public final class ViewportStateImpl implements ViewportState {
         validateConstraints(this);
     }
 
-    public static void validateConstraints(final ViewportState viewport) {
+    static void validateConstraints(final ViewportState viewport) {
         assert viewport.getViewStart() <= viewport.getViewEnd();
         assert viewport.getMaxEnd() > 0; // this simplifies calculations in many places
         assert viewport.getViewWidth() >= 0;
@@ -119,19 +110,8 @@ public final class ViewportStateImpl implements ViewportState {
     }
 
     @Override
-    public boolean isOffsetInViewport(final double offset) {
-        return (computePixelXOffset(getViewStart()) <= offset)
-                && (offset <= computePixelXOffset(getViewEnd()));
-    }
-
-    @Override
     public boolean isTimeInViewport(final long time) {
         return (getViewStart() <= time) && (time <= getViewEnd());
-    }
-
-    @Override
-    public boolean isEntireTrackVisible() {
-        return viewStart == 0 && viewEnd == maxEnd;
     }
 
     @Override
@@ -141,22 +121,19 @@ public final class ViewportStateImpl implements ViewportState {
 
     public ViewportStateImpl zoomViewport(final double zoomLevel,
                                           final long centerTime) {
-        final double millisecondsPerPixel = getMillisecondsPerPixelFor(
-                zoomLevel);
+        final double millisecondsPerPixel = getMillisecondsPerPixelFor(zoomLevel);
 
         // preserve the needle position
-        long centerPositionTime = Math.min(Math.max(centerTime, 0),
-                getMaxEnd());
+        long centerPositionTime = Math.min(Math.max(centerTime, 0), getMaxEnd());
 
-        long zoomCenterTime = 0;
+        long zoomCenterTime;
         double dxZoomCenterRatio = 0.5;
 
         if ((centerTime >= 0) && isTimeInViewport(centerTime)) {
 
             long zoomWindowStart = getViewStart();
 
-            dxZoomCenterRatio = (double) (centerPositionTime - zoomWindowStart)
-                    / getViewDuration();
+            dxZoomCenterRatio = (double) (centerPositionTime - zoomWindowStart) / getViewDuration();
 
             zoomCenterTime = centerPositionTime;
         } else {
@@ -165,29 +142,24 @@ public final class ViewportStateImpl implements ViewportState {
 
         dxZoomCenterRatio = Math.min(Math.max(dxZoomCenterRatio, 0.0), 1.0);
 
-        long newZoomWindowTimeRange = Math.round(millisecondsPerPixel
-                * getViewWidth());
+        long newZoomWindowTimeRange = Math.round(millisecondsPerPixel * getViewWidth());
         newZoomWindowTimeRange = Math.max(newZoomWindowTimeRange, 1);
-        newZoomWindowTimeRange = Math.min(newZoomWindowTimeRange,
-                getMaxEnd() + 1);
+        newZoomWindowTimeRange = Math.min(newZoomWindowTimeRange, getMaxEnd() + 1);
 
-        assert (newZoomWindowTimeRange >= 1)
-                && (newZoomWindowTimeRange <= (getMaxEnd() + 1));
+        assert (newZoomWindowTimeRange >= 1) && (newZoomWindowTimeRange <= (getMaxEnd() + 1));
 
-        long newStart = Math.round(zoomCenterTime
-                - (dxZoomCenterRatio * newZoomWindowTimeRange));
+        long newStart = Math.round(zoomCenterTime - (dxZoomCenterRatio * newZoomWindowTimeRange));
 
         if ((newStart + newZoomWindowTimeRange) > getMaxEnd()) {
             newStart = getMaxEnd() - newZoomWindowTimeRange + 1;
         }
 
-        if (newStart < 0) {
-            newStart = 0;
-        }
+        newStart = Math.max(0, newStart);
 
-        assert (0 <= newStart) && (newStart <= getMaxEnd());
+        assert (newStart <= getMaxEnd());
 
         long newEnd = newStart + newZoomWindowTimeRange - 1;
+
         assert (0 <= newEnd) && (newEnd <= getMaxEnd());
 
         return new ViewportStateImpl(getMaxEnd(), getViewWidth(), newStart, newEnd);
@@ -213,9 +185,7 @@ public final class ViewportStateImpl implements ViewportState {
      * @return Upper bound on the number of milliseconds per pixel.
      */
     private double upperMsPerPixel() {
-
-        final long maxTimeMilliseconds = (getMaxEnd() > 0)
-                ? getMaxEnd() : (24 * 60 * 60 * 1000);
+        final long maxTimeMilliseconds = (getMaxEnd() > 0) ? getMaxEnd() : (24 * 60 * 60 * 1000);
 
         return Math.ceil((double) maxTimeMilliseconds / getViewWidth());
     }

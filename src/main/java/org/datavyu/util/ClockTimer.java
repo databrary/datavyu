@@ -21,85 +21,125 @@ import java.util.TimerTask;
 
 
 /**
- * ClockTime is a class which can be used as a time to keep multiple objects in sync.
+ * Keeps multiple streams in periodic sync and does not play beyond the boundaries of a stream.
  */
 public final class ClockTimer {
 
-    /** Clock tick period */
-    private static final long CLOCK_TICK = 31L;
+    /** Synchronization threshold in milliseconds */
+    public static final long SYNC_THRESHOLD = 1500L; // 1.5 sec  (because some plugins are not very precise in seek)
 
-    /** Clock initial delay */
-    private static final long CLOCK_DELAY = 0L;
+    /** Clock tick period in milliseconds */
+    private static final long CLOCK_SYNC_INTERVAL = 1500L;
+
+    /** Clock initial delay in milliseconds */
+    private static final long CLOCK_SYNC_DELAY = 0L;
 
     /** Convert nanoseconds to milliseconds */
     private static final long NANO_IN_MILLI = 1000000L;
 
-    /** Current time of the clock */
-    private double time;
+    private static final long CHECK_BOUNDARY_INTERVAL = 100L; // milliseconds
 
-    /** Used to calculate elapsed time */
-    private long nanoTime;
+    private static final long CHECK_BOUNDARY_DELAY = 0L;
 
-    /** Is the clock currently stopped */
+    private static final long SEEK_PLAYBACK_INTERVAL = 31L; // milliseconds
+
+    private static final long SEEK_PLAYBACK_DELAY = 0L;
+
+    /** Minimum time for the clock in milliseconds */
+    private long minTime;
+
+    /** Maximum time for the clock in milliseconds */
+    private long maxTime;
+
+    /** Current time of the clock in milliseconds */
+    private double clockTime;
+
+    /** Last time in nanoseconds; it is used to calculate the elapsed */
+    private double lastTime;
+
+    /** Is the clock stopped */
     private boolean isStopped;
 
-    /** State of the clock in the previous tick */
-    private boolean oldIsStopped;
-
-    /** Update multiplier */
+    /** The rate factor for the clock updates */
     private float rate = 1F;
 
-    /** The set of objects that listen to this clock */
+    /** Listeners of this clock */
     private Set<ClockListener> clockListeners = new HashSet<>();
 
     /**
      * Default constructor.
      */
     public ClockTimer() {
-        this(0L);
-    }
 
-    /**
-     * Constructor.
-     *
-     * @param initialTime Intial clock time.
-     */
-    public ClockTimer(final long initialTime) {
-        time = initialTime;
+        // Initialize values
+        clockTime = 0;
+        lastTime = 0;
+        minTime = 0;
+        maxTime = 0;
         isStopped = true;
-        oldIsStopped = true;
-        Timer clock = new Timer();
-        clock.scheduleAtFixedRate(new TimerTask() {
+
+        // Sync timer at lower frequency
+        new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                tick();
+                periodicSync();
             }
-        }, CLOCK_DELAY, CLOCK_TICK);
-    }
+        }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
 
-    public synchronized void setTimeWithoutNotify(final long newTime) {
-        time = newTime;
-        time = Math.max(time, 0);
+        // Boundary checker at higher frequency
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                checkBoundary();
+            }
+        }, CHECK_BOUNDARY_DELAY, CHECK_BOUNDARY_INTERVAL);
+
+        // Seek playback for fast, backward playback
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                notifySeekPlayback();
+            }
+        }, SEEK_PLAYBACK_DELAY, SEEK_PLAYBACK_INTERVAL);
     }
 
     /**
-     * @return Current clock time.
+     * Sets the minimum stream time
+     *
+     * @param minTime The minimum stream time
      */
-    public synchronized long getTime() {
-        return (long) time;
+    public synchronized void setMinTime(long minTime) {
+        this.minTime = minTime;
     }
 
     /**
-     * @param newTime Millisecond time to set clock to.
+     * Sets the maximum stream time
+     *
+     * @param maxTime The maximum stream time
      */
-    public synchronized void setTime(final long newTime) {
-        if (isStopped) {
-            time = newTime;
-            time = Math.max(time, 0);
-            notifyStep();
-        } else {
-            stop();
-        }
+    public synchronized void setMaxTime(long maxTime) {
+        this.maxTime = maxTime;
+    }
+
+    /**
+     * Get the clock time into the range for this clock timer
+     *
+     * @param clockTime Clock time
+     *
+     * @return Clock time in range for this clock timer
+     */
+    public synchronized long toRange(long clockTime) {
+        return Math.min(Math.max(clockTime, minTime), maxTime);
+    }
+
+
+    /**
+     * Get the current stream time
+     *
+     * @return Current stream time
+     */
+    public synchronized double getStreamTime() {
+        return (long) clockTime + minTime;
     }
 
     /**
@@ -110,42 +150,89 @@ public final class ClockTimer {
     }
 
     /**
-     * @param newRate Multiplier for CLOCK_TICK.
+     * Set the time but don't activate any of the listeners
+     *
+     * All listeners will be updated through the auto sync to the new time
+     *
+     * Use this method if eventual synchronization is enough
+     *
+     * @param time The new time
      */
-    public synchronized void setRate(final float newRate) {
-        rate = newRate;
-        notifyRate();
+    public synchronized void setTime(long time) {
+        if (minTime <= time && time <= maxTime) {
+            clockTime = time;
+            // Don't notify a sync or force a sync
+            // The time will be updated by a periodic sync
+        }
     }
 
     /**
-     * Initiate starting of clock.
+     * Set the time and force an update of the clock time to all listeners
+     *
+     * Use this method if immediate synchronization is desired
+     *
+     * @param time The new time
+     */
+    public synchronized void setForceTime(long time) {
+        if (minTime <= time && time <= maxTime) {
+            clockTime = time;
+            // Notify a force sync
+            notifyForceSync();
+        }
+    }
+
+    /**
+     * Toggles between start/stop
+     */
+    public synchronized void toggle() {
+        if (isStopped) {
+            start();
+        } else {
+            stop();
+        }
+    }
+
+    /**
+     * Sets the update rate for the clock
+     *
+     * @param newRate New update rate
+     */
+    public synchronized void setRate(float newRate) {
+        updateElapsedTime();
+        rate = newRate;
+        // FIRST notify about the rate change
+        notifyRate();
+        // SECOND start or stop
+        if (Math.abs(rate) < Math.ulp(1f)) {
+            stop();
+        } else {
+            start();
+        }
+    }
+
+    /**
+     * If the clock is not running, then this starts the clock and fires a notify
+     * start event with the current clock time
      */
     public synchronized void start() {
         if (isStopped) {
-            nanoTime = System.nanoTime();
             isStopped = false;
+            lastTime = System.nanoTime();
+            notifyStart();
         }
     }
 
     /**
-     * Set flag to stop clock at next time update (boundary).
+     * If the clock is not stopped, then this stops the clock and fires a notify
+     * stop event with the current clock time
      */
     public synchronized void stop() {
         if (!isStopped) {
+            updateElapsedTime();
             isStopped = true;
-            setRate(0);
+            notifyStop();
         }
     }
-
-    /**
-     * @param milliseconds Time step to apply to current time when clock stopped.
-     */
-    public synchronized void stepTime(final long milliseconds) {
-        time += milliseconds;
-        time = Math.max(time, 0);
-        notifyStep();
-    }
-
 
     /**
      * @return True if clock is stopped.
@@ -155,44 +242,73 @@ public final class ClockTimer {
     }
 
     /**
-     * @param listener Listener requiring clockTick updates.
+     * Registers a clock listener
+     *
+     * @param listener Listener requiring clockTick updates
      */
     public synchronized void registerListener(final ClockListener listener) {
         clockListeners.add(listener);
     }
 
     /**
-     * The "tick" of the clock - updates listeners of changes in time.
+     * Update the clock time with the elapsed time since the last update
      */
-    private synchronized void tick() {
-        if (oldIsStopped != isStopped) {
-            if (isStopped) {
-                notifyStop();
-            } else {
-                notifyStart();
+    private synchronized void updateElapsedTime() {
+        double newTime = System.nanoTime();
+        clockTime = isStopped ? clockTime : Math.min(Math.max(
+                clockTime + rate * (newTime - lastTime) / NANO_IN_MILLI, minTime), maxTime);
+        lastTime = newTime;
+    }
+
+    /**
+     * The "periodicSync" of the clock - updates listeners of changes in time.
+     */
+    private synchronized void periodicSync() {
+        updateElapsedTime();
+        notifyPeriodicSync();
+    }
+
+    private synchronized void checkBoundary() {
+        updateElapsedTime();
+        notifyCheckBoundary();
+    }
+
+    private void notifySeekPlayback() {
+        // TODO: Remove this once plugin's support fast playback forward / backward playback
+        // Only activate the seek playback for rates < 0 or > 2x
+        if (rate > 2F || rate < 0F) {
+            for (ClockListener clockListener : clockListeners) {
+                clockListener.clockSeekPlayback(clockTime);
             }
-            oldIsStopped = isStopped;
-        }
-
-        if (!isStopped) {
-            long currentNano = System.nanoTime();
-            time += rate * (currentNano - nanoTime) / NANO_IN_MILLI;
-            nanoTime = currentNano;
-            notifyTick();
         }
     }
 
-    /**
-     * Notify clock listeners of tick event.
-     */
-    private void notifyTick() {
+    private void notifyCheckBoundary() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockTick((long) time);
+            clockListener.clockBoundaryCheck(clockTime);
         }
     }
 
     /**
-     * Notify clock listeners of rate update event.
+     * Notify clock listeners of a force periodicSync -- consumers must act on this
+     */
+    private void notifyForceSync() {
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockForceSync(clockTime);
+        }
+    }
+
+    /**
+     * Notify clock listeners of a periodic periodicSync -- consumers may act on this
+     */
+    private void notifyPeriodicSync() {
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockPeriodicSync(clockTime);
+        }
+    }
+
+    /**
+     * Notify clock listeners of rate update.
      */
     private void notifyRate() {
         for (ClockListener clockListener : clockListeners) {
@@ -205,7 +321,7 @@ public final class ClockTimer {
      */
     private void notifyStart() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockStart((long) time);
+            clockListener.clockStart(clockTime);
         }
     }
 
@@ -214,16 +330,7 @@ public final class ClockTimer {
      */
     private void notifyStop() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockStop((long) time);
-        }
-    }
-
-    /**
-     * Notify clock listeners of time step event.
-     */
-    private void notifyStep() {
-        for (ClockListener clockListener : clockListeners) {
-            clockListener.clockStep((long) time);
+            clockListener.clockStop(clockTime);
         }
     }
 
@@ -231,30 +338,39 @@ public final class ClockTimer {
      * Listener interface for clock 'ticks'.
      */
     public interface ClockListener {
+        /**
+         * @param clockTime Current time in milliseconds
+         */
+        void clockSeekPlayback(double clockTime);
 
         /**
-         * @param time Current time in milliseconds
+         * @param clockTime Current time in milliseconds
          */
-        void clockTick(long time);
+        void clockBoundaryCheck(double clockTime);
 
         /**
-         * @param time Current time in milliseconds
+         * @param clockTime Current time in milliseconds
          */
-        void clockStart(long time);
+        void clockForceSync(double clockTime);
 
         /**
-         * @param time Current time in milliseconds
+         * @param clockTime Current time in milliseconds
          */
-        void clockStop(long time);
+        void clockPeriodicSync(double clockTime);
+
+        /**
+         * @param clockTime Current time in milliseconds
+         */
+        void clockStart(double clockTime);
+
+        /**
+         * @param clockTime Current time in milliseconds
+         */
+        void clockStop(double clockTime);
 
         /**
          * @param rate Current (updated) rate.
          */
         void clockRate(float rate);
-
-        /**
-         * @param time Current time in milliseconds
-         */
-        void clockStep(long time);
     }
 }

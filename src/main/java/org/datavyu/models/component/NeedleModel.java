@@ -23,19 +23,27 @@
 package org.datavyu.models.component;
 
 public interface NeedleModel extends MixerComponentModel {
-	public static String NAME = NeedleModel.class.getName();
+
+	String NAME = NeedleModel.class.getName();
+
+    /**
+     * Get the needle state
+     *
+     * @return Needle state
+     */
+	NeedleState getNeedle();
 	
     /**
-     * Returns the current temporal position of the needle.
+     * Returns the current temporal position of the needle
      * 
      * @return needle position in milliseconds
      */
 	long getCurrentTime();
 
 	/**
-	 * Sets the current temporal position of the needle.
+	 * Sets the current temporal position of the needle
 	 * 
-	 * @param currentTime
+	 * @param currentTime the current time
 	 */
     void setCurrentTime(final long currentTime);
 }

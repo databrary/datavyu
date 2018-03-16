@@ -68,8 +68,7 @@ public final class TimescaleModel {
      */
     private Color millisecondsMarkerColor = Color.black;
 
-    public TimescaleModel() {
-    }
+    public TimescaleModel() {}
 
     protected TimescaleModel(final TimescaleModel other) {
         zoomWindowIndicatorHeight = other.zoomWindowIndicatorHeight;

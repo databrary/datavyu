@@ -335,7 +335,7 @@ public final class CreateNewCellController {
             for (Cell cell : model.getSelectedCells()) {
                 logger.info("create cell below selected cell");
 
-                // reget the selected cell from the database using its id
+                // reget the selected cell from the database using its identifier
                 // in case a previous insert has changed its ordinal.
                 // recasting to DataCell without checking as the iterator
                 // only returns DataCells (no ref cells allowed so far)

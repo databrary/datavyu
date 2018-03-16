@@ -14,7 +14,6 @@
  */
 package org.datavyu.controllers.project;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
@@ -295,8 +294,8 @@ public final class ProjectController {
     public void loadProject() {
 
         // Use the plugin manager to load up the data viewers
-        PluginManager pm = PluginManager.getInstance();
-        VideoController dataController = spreadSheetPanel.getVideoController();
+        PluginManager pluginManager = PluginManager.getInstance();
+        VideoController videoController = spreadSheetPanel.getVideoController();
 
         // Load the plugins required for each media file
         boolean showController = false;
@@ -304,7 +303,7 @@ public final class ProjectController {
         List<String> missingFilesList = new LinkedList<>();
         List<String> missingPluginList = new LinkedList<>();
 
-        final MixerController mixerController = dataController.getMixerController();
+        final MixerController mixerController = videoController.getMixerController();
 
         // Load the viewer settings.
         for (ViewerSetting setting : project.getViewerSettings()) {
@@ -312,8 +311,6 @@ public final class ProjectController {
 
             File file = new File(setting.getFilePath());
 
-            File currentDir = new File(project.getProjectDirectory());
-            String dataFileName = FilenameUtils.getName(setting.getFilePath());
 
             if (!file.exists()) {
                 // Look for a file by generating OS-independent paths.
@@ -329,6 +326,8 @@ public final class ProjectController {
             // TODO: Enable search of file again
             /*
             if (!file.exists()) {
+                File currentDir = new File(project.getProjectDirectory());
+                String dataFileName = FilenameUtils.getName(setting.getFilePath());
 
                 // Look for a file that _might_ be the file we are looking for.
                 // Searches in this directory, all child directories, and from
@@ -348,9 +347,9 @@ public final class ProjectController {
                 continue;
             }
 
-            Plugin plugin = pm.getAssociatedPlugin(setting.getPluginName());
+            Plugin plugin = pluginManager.getAssociatedPlugin(setting.getPluginName());
 
-            // BugzID:2110
+/*            // BugzID:2110
             if ((plugin == null) && (setting.getPluginClassifier() != null)) {
                 plugin = pm.getCompatiblePlugin(setting.getPluginClassifier(), file);
             }
@@ -361,38 +360,42 @@ public final class ProjectController {
                 missingPluginList.add(setting.getPluginName());
 
                 continue;
-            }
+            }*/
 
-            final StreamViewer viewer = plugin.getNewStreamViewer(Datavyu.getApplication().getMainFrame(), false);
-            viewer.setIdentifier(Identifier.generateIdentifier());
-            viewer.setSourceFile(file);
+            final StreamViewer streamViewer = plugin.getNewStreamViewer(
+                    Identifier.generateIdentifier(),
+                    file,
+                    Datavyu.getApplication().getMainFrame(),
+                    false);
 
             if (setting.getSettingsId() != null) {
                 // new project file
-                viewer.loadSettings(setting.getSettingsInputStream());
+                streamViewer.loadSettings(setting.getSettingsInputStream());
             } else {
                 // old project file
-                viewer.setStartTime(setting.getOffset());
+                streamViewer.setOffset(setting.getOffset());
             }
 
-            dataController.addViewer(viewer, viewer.getStartTime());
+            // Make sure that the parent dialog is visible
+            if (streamViewer.getParentJDialog() != null) {
+                boolean visible = streamViewer.getParentJDialog().isVisible();
+                Datavyu.getApplication().show(streamViewer.getParentJDialog());
+                if (!visible) {
+                    streamViewer.getParentJDialog().setVisible(false);
+                }
+            }
 
-            dataController.addTrack(viewer.getIdentifier(),
-                    plugin.getTypeIcon(), file.getAbsolutePath(), file.getName(),
-                    viewer.getDuration(), viewer.getStartTime(),
-                    viewer.getTrackPainter());
+            videoController.addStream(plugin.getTypeIcon(), streamViewer);
 
             if (setting.getTrackSettings() != null) {
                 final TrackSettings ts = setting.getTrackSettings();
-                mixerController.setTrackInterfaceSettings(viewer
-                        .getIdentifier(), ts.getMarkers(), ts.isLocked());
+                mixerController.setTrackInterfaceSettings(streamViewer.getIdentifier(), ts.getMarkers(), ts.isLocked());
             }
 
-            mixerController.bindTrackActions(viewer.getIdentifier(),
-                    viewer.getCustomActions());
-            viewer.addViewerStateListener(
+            mixerController.bindTrackActions(streamViewer.getIdentifier(), streamViewer.getCustomActions());
+            streamViewer.addViewerStateListener(
                     mixerController.getTracksEditorController()
-                            .getViewerStateListener(viewer.getIdentifier()));
+                            .getViewerStateListener(streamViewer.getIdentifier()));
         }
 
         // Do not remove; this is here for backwards compatibility.
@@ -495,21 +498,23 @@ public final class ProjectController {
         int settingsId = 1;
 
         for (StreamViewer viewer : dataController.getStreamViewers()) {
-            ViewerSetting vs = new ViewerSetting();
-            vs.setFilePath(viewer.getSourceFile().getAbsolutePath());
-            vs.setPluginName(viewer.getClass().getName());
+            ViewerSetting viewerSetting = new ViewerSetting();
+            viewerSetting.setFilePath(viewer.getSourceFile().getAbsolutePath());
+            viewerSetting.setPluginName(viewer.getClass().getName());
+
 
             // BugzID:2108
-            Plugin p = PluginManager.getInstance().getAssociatedPlugin(
-                    vs.getPluginName());
+            Plugin p = PluginManager.getInstance().getAssociatedPlugin(viewerSetting.getPluginName());
             assert p.getNamespace() != null;
             assert !"".equals(p.getNamespace());
 
-            vs.setPluginClassifier(p.getNamespace());
+            viewerSetting.setPluginUUID(p.getPluginUUID());
+
+            viewerSetting.setPluginClassifier(p.getNamespace());
 
             // BugzID:1806
-            vs.setSettingsId(Integer.toString(settingsId++));
-            viewer.storeSettings(vs.getSettingsOutputStream());
+            viewerSetting.setSettingsId(Integer.toString(settingsId++));
+            viewer.storeSettings(viewerSetting.getSettingsOutputStream());
 
             // BugzID:2107
             TrackModel tm = dataController.getMixerController().getTrackModel(viewer.getIdentifier());
@@ -517,9 +522,9 @@ public final class ProjectController {
             ts.setMarkers(tm.getMarkers());
             ts.setLocked(tm.isLocked());
 
-            vs.setTrackSettings(ts);
+            viewerSetting.setTrackSettings(ts);
 
-            viewerSettings.add(vs);
+            viewerSettings.add(viewerSetting);
         }
 
         project.setViewerSettings(viewerSettings);

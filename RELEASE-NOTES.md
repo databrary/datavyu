@@ -1,5 +1,5 @@
-# Datavyu 1.4. Pre-Release Notes
-## 10/10/2017
+# Datavyu 1.4. Pre-Release 3 Notes
+## 02/04/2018
 
 ### New features
 * Added ffmpeg plugin for playback under windows
@@ -14,6 +14,8 @@
   * sound only plays back when playing at 1x
   * jumping to random locations within the stream may take 1-2sec
   * the sound after a stop/jump and playback may be a bit distorted
+  * when opening multiple streams and the ffmpeg as 2nd, 3rd it might 
+    get stuck after playing for some time
 
 
 

@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.nativeosx.NativeOSXPlugin;
-import org.datavyu.plugins.qtkitplayer.QTKitPlugin;
+import org.datavyu.plugins.qtkitplayer.QtKitPlugin;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -234,7 +234,7 @@ public class MacOS {
             if(major >= 12) {
                 return new NativeOSXPlugin();
             } else {
-                return new QTKitPlugin();
+                return new QtKitPlugin();
             }
         } catch (Exception e) {
             logger.error("Could create plugin. Error: ", e);

@@ -67,9 +67,7 @@ public final class RegionController implements PropertyChangeListener {
     private final class RegionMarkerMouseListener extends MouseInputAdapter {
         private boolean onStartMarker;
         private boolean onEndMarker;
-        /**
-         * offset in pixels from the region marker position to where the marker was "picked up" for dragging
-         */
+        // offset in pixels from the region marker position to where the marker was "picked up" for dragging
         private double offset;
 
         private ViewportState viewport;

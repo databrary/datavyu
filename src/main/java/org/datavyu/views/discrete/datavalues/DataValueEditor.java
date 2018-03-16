@@ -22,6 +22,7 @@ import org.datavyu.models.db.CellValue;
 import org.datavyu.views.discrete.EditorComponent;
 
 import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -104,7 +105,7 @@ public abstract class DataValueEditor extends EditorComponent {
             //Q: How can I get the Cell reference from the value
             UndoableEdit edit = new ChangeValCellEdit(cell);                        
             // notify the listeners
-            Datavyu.getView().getUndoSupport().postEdit(edit);
+            Datavyu.getTimescaleComponent().getUndoSupport().postEdit(edit);
 */
         }
     }

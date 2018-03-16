@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import javax.swing.*;
@@ -17,15 +18,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     private static Logger logger = LogManager.getLogger(MPlayerDataViewerDialog.class);
 
     /**
-     * Data viewer offset.
-     */
-    private long offset;
-    /**
-     * Data to visualize.
-     */
-    private File data;
-    /**
-     * Boolean to keep track of whether or not we are playing
+     * Boolean to keep track of whether or not we are isPlaying
      */
     private boolean playing;
 
@@ -35,16 +28,16 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
      * VLC has issues when trying to go to the same spot multiple times
      */
     private JDialog dialog = new JDialog();
-    private MPlayerApplication javafxapp;
+    private MPlayerApplication mPlayerApp;
     private boolean assumedFPS = false;
 
-
-    public MPlayerDataViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
-        javafxapp = new MPlayerApplication(null);
+    MPlayerDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
+        mPlayerApp = new MPlayerApplication(sourceFile);
+        setSourceFile(sourceFile);
     }
 
-    public static void runAndWait(final Runnable action) {
+    static void runAndWait(final Runnable action) {
         if (action == null)
             throw new NullPointerException("action");
 
@@ -72,31 +65,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
 
     @Override
     protected void setPlayerVolume(float volume) {
-        javafxapp.setVolume(volume);
-    }
-
-    private void launchEdtTaskNow(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(edtTask);
-            } catch (Exception e) {
-                logger.error("Failed edit task now. Error: ", e);
-            }
-        }
-    }
-
-    private void launchEdtTaskLater(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeLater(edtTask);
-            } catch (Exception e) {
-                logger.error("Failed edit task later. Error: ", e);
-            }
-        }
+        mPlayerApp.setVolume(volume);
     }
 
     @Override
@@ -106,7 +75,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public float getFramesPerSecond() {
-        return javafxapp.getFrameRate();
+        return mPlayerApp.getFrameRate();
     }
 
     public void setFramesPerSecond(float framesPerSecond) {
@@ -114,29 +83,9 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public float getDetectedFrameRate() {
-        return getFramesPerSecond();
-    }
-
-    @Override
-    public long getStartTime() {
-        return offset;
-    }
-
-    @Override
-    public void setStartTime(final long offset) {
-        this.offset = offset;
-    }
-
-    @Override
     public void setViewerVisible(final boolean isVisible) {
-        javafxapp.setVisible(isVisible);
+        mPlayerApp.setVisible(isVisible);
         this.isVisible = isVisible;
-    }
-
-    @Override
-    public File getSourceFile() {
-        return data;
     }
 
     @Override
@@ -145,10 +94,9 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
         logger.info("Set source file: " + sourceFile.getAbsolutePath());
 
         final CountDownLatch latch = new CountDownLatch(1);
-        data = sourceFile;
         Platform.setImplicitExit(false);
 
-        javafxapp = new MPlayerApplication(sourceFile);
+        mPlayerApp = new MPlayerApplication(sourceFile);
 
         logger.info("Is event dispatch thread? " + (SwingUtilities.isEventDispatchThread() ? "Yes" : "No") + ".");
         logger.info("Is FX application thread? " + (Platform.isFxApplicationThread() ? "Yes" : "No") + ".");
@@ -157,7 +105,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
         runAndWait(new Runnable() {
             @Override
             public void run() {
-                javafxapp.start(new Stage());
+                mPlayerApp.start(new Stage());
                 latch.countDown();
             }
         });
@@ -167,7 +115,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
             logger.error("Await latch failed. Error: ", e);
         }
 
-        while (!javafxapp.isInit()) {
+        while (!mPlayerApp.isInit()) {
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {
@@ -176,13 +124,12 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
         }
 
         logger.info("Finished setting source: " + sourceFile);
-        logger.info("Duration is: " + javafxapp.getDuration());
+        logger.info("Duration is: " + mPlayerApp.getDuration());
 
         dialog.setVisible(false); // Hide our fake dialog box
 
         // TODO Add in function to guess frame rate
     }
-
 
     /**
      * Scales the video to the desired ratio.
@@ -191,14 +138,9 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
      */
     @Override
     protected void resizeVideo(final float scale) {
-        javafxapp.setScale(scale);
+        mPlayerApp.setScale(scale);
 
         notifyChange();
-    }
-
-    @Override
-    protected void setPlayerSourceFile(File playerSourceFile) {
-
     }
 
     @Override
@@ -213,17 +155,17 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public long getDuration() {
-        return javafxapp.getDuration();
+        return mPlayerApp.getDuration();
     }
 
     @Override
     public long getCurrentTime() {
-        return javafxapp.getCurrentTime();
+        return mPlayerApp.getCurrentTime();
     }
 
     @Override
-    public void seek(final long position) {
-        javafxapp.seek(position);
+    public void setCurrentTime(final long time) {
+        mPlayerApp.seek(time);
     }
 
     @Override
@@ -234,18 +176,18 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     @Override
     public void stop() {
         playing = false;
-        javafxapp.pause();
+        mPlayerApp.pause();
     }
 
     @Override
-    public void setPlaybackSpeed(final float rate) {
-        javafxapp.setRate(rate);
+    public void setRate(final float rate) {
+        mPlayerApp.setRate(rate);
     }
 
     @Override
-    public void play() {
+    public void start() {
         playing = true;
-        javafxapp.play();
+        mPlayerApp.play();
     }
 
     @Override
@@ -254,14 +196,13 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void unsetSourceFile() {
+    public void close() {
         stop();
-        javafxapp.setVisible(false);
-        javafxapp.closeAndDestroy();
+        mPlayerApp.setVisible(false);
+        mPlayerApp.closeAndDestroy();
     }
 
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }
-
 }
