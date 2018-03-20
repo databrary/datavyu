@@ -30,12 +30,12 @@ public final class CarriageEvent extends EventObject {
 
     /** Describes the type of event that occurred */
     public enum EventType {
-        MARKER_CHANGED, // Snap position changed
-        MARKER_REQUEST, // Requesting snap position
-        MARKER_SAVE, // Requesting snap saving
+        MARKER_CHANGED,     // Snap position changed
+        MARKER_REQUEST,     // Requesting snap position
+        MARKER_SAVE,        // Requesting snap saving
         CARRIAGE_SELECTION, // Track changed selection state
-        OFFSET_CHANGE, // Track changed offset position
-        CARRIAGE_LOCK // Track is (un)locked
+        OFFSET_CHANGE,      // Track changed offset position
+        CARRIAGE_LOCK       // Track is (un)locked
     }
 
     /** Track identifier */

@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 public interface MixerComponentModel {
+
 	MixerModel getMixerModel();
     
     /**

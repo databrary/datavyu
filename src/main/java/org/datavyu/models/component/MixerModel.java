@@ -29,12 +29,12 @@ public interface MixerModel extends MixerComponentModel {
 	ViewportModel getViewportModel();
 	
 	/**
-	 * @return model object for the play back region boundaries
+	 * @return model object for the start back region boundaries
 	 */
 	RegionModel getRegionModel();
 
 	/**
-	 * @return model object for the play back needle
+	 * @return model object for the start back needle
 	 */
 	NeedleModel getNeedleModel();
 }

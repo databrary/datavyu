@@ -53,7 +53,12 @@ public class ViewportModelImpl extends MixerComponentModelImpl implements Viewpo
         final ViewportState newViewport;
 
         synchronized (this) {
-            if (viewport != null && viewport.getMaxEnd() == newMaxEnd && viewport.getViewWidth() == newWidth && viewport.getViewStart() == newViewStart && viewport.getViewEnd() == newViewEnd) {
+            // If no change in the viewport we are done here
+            if (viewport != null
+                    && viewport.getMaxEnd() == newMaxEnd
+                    && viewport.getViewWidth() == newWidth
+                    && viewport.getViewStart() == newViewStart
+                    && viewport.getViewEnd() == newViewEnd) {
                 return;
             }
 

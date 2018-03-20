@@ -108,7 +108,7 @@ public interface Cell {
     Variable getVariable();
 
     /**
-     * @return The unique id of the cell
+     * @return The unique identifier of the cell
      */
     String getCellId();
 

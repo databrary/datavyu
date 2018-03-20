@@ -240,7 +240,10 @@ public final class ConfigurationProperties implements Serializable {
         try {
             Font defaultFont = Font.createFont(Font.TRUETYPE_FONT,
                     configurationProperties.getClass().getResourceAsStream(Constants.DEFAULT_FONT_FILE));
-            configurationProperties.setSpreadSheetDataFont(defaultFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
+            Font defaultCellFont = Font.createFont(Font.TRUETYPE_FONT,
+                    configurationProperties.getClass().getResourceAsStream(Constants.DEFAULT_CELL_FONT_FILE));
+            configurationProperties.setSpreadSheetDataFont(defaultCellFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
+//            configurationProperties.setSpreadSheetDataFont(defaultFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
             configurationProperties.setSpreadSheetLabelFont(defaultFont.deriveFont(DEFAULT_LABEL_FONT_SIZE));
         } catch (Exception e) {
             logger.error("Error, unable to load font " + Constants.DEFAULT_FONT_FILE + ". The error is " + e);

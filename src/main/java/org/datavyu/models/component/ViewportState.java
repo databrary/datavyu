@@ -23,10 +23,10 @@
 package org.datavyu.models.component;
 
 /**
- * Defines constraints of the tracks view. The properties of this object are immutable like with {@link java.lang.String} objects.
+ * Defines constraints of the tracks view. The properties of this object are immutable
  * <p>
- * For thread safety, any code that works with viewports should retrieve a reference to a <code>Viewport</code> object <b>once</b>
- * and make all subsequent calls for the current task through the <b>same</b> object, e.g.:
+ * For thread safety, any code that works with viewports should retrieve a reference to a <code>Viewport</code> object
+ * <b>once</b> and make all subsequent calls for the current task through the <b>same</b> object, e.g.:
  * <p>
  * <code>
  *     final ViewportState viewport = controller.getViewport();
@@ -46,7 +46,8 @@ package org.datavyu.models.component;
  * </code>
  */
 public interface ViewportState {
-    static final String NAME = ViewportState.class.getName();
+
+    String NAME = ViewportState.class.getName();
 
     /**
      * @return Maximum valid timestamp in milliseconds. Inclusive.
@@ -104,11 +105,4 @@ public interface ViewportState {
      * @throw {@link IllegalArgumentException} if offset is not in the viewport
      */
     long computeTimeFromXOffset(double offset);
-
-    boolean isOffsetInViewport(double offset);
-
-    /**
-     * @return whether the entire track (from time 0 until {@link #getMaxEnd()}) is visible in the current viewport
-     */
-    boolean isEntireTrackVisible();
 }

@@ -18,8 +18,8 @@ import com.google.common.collect.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.javafx.JavaFxPlugin;
-import org.datavyu.plugins.quicktime.QTPlugin;
+import org.datavyu.plugins.ffmpegplayer.FFmpegPlugin;
+import org.datavyu.plugins.javafx.JfxPlugin;
 import org.datavyu.util.MacOS;
 import org.jdesktop.application.LocalStorage;
 
@@ -393,22 +393,12 @@ public final class PluginManager {
                 @Override
                 public int compare(final Plugin o1, final Plugin o2) {
 
-                    if (QTPlugin.isLibrariersLoaded()) {
-                        if ("QuickTime Video".equals(o1.getPluginName())) {
-                            return -1;
-                        }
+                    if ("JavaFX Video".equals(o1.getPluginName())) {
+                        return -1;
+                    }
 
-                        if ("QuickTime Video".equals(o2.getPluginName())) {
-                            return 1;
-                        }
-                    } else {
-                        if ("JavaFX Video".equals(o1.getPluginName())) {
-                            return -1;
-                        }
-
-                        if ("JavaFX Video".equals(o2.getPluginName())) {
-                            return 1;
-                        }
+                    if ("JavaFX Video".equals(o2.getPluginName())) {
+                        return 1;
                     }
 
                     return o1.getPluginName().compareTo(o2.getPluginName());
@@ -450,21 +440,24 @@ public final class PluginManager {
      */
     public Plugin getCompatiblePlugin(final String classifier, final File file) {
 
-        // Short circuit this for the preferred new plugins for Windows and OSX
-        // FR: What is this doing? (One selects the play back plugin in the open file dialog)
+        // Hard-code plugins for Windows, OSX, and Linux
         if (classifier.equals("datavyu.video")) {
+
+            // Mac default is OSXPlugin
             if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
                 return MacOS.getNativeOSXPlugin();
             }
 
+            // Windows default is FFmpegPlugin
             if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {
-                QTPlugin qtPlugin = new QTPlugin();
-                logger.info("Loading windows plugin: " + qtPlugin.getPluginName());
-                return qtPlugin;
+                FFmpegPlugin fFmpegPlugin = new FFmpegPlugin();
+                logger.info("Loading windows plugin: " + fFmpegPlugin.getPluginName());
+                return fFmpegPlugin;
             }
 
+            // Linux default is JFXPlugin
             if (Datavyu.getPlatform() == Datavyu.Platform.LINUX) {
-                return new JavaFxPlugin();
+                return new JfxPlugin();
             }
         }
 

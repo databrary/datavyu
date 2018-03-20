@@ -39,13 +39,6 @@ import org.datavyu.views.component.TrackPainter;
 public interface StreamViewer {
 
     /**
-     * Sets the identifier used to identify this viewer.
-     *
-     * @param id Identifier to use.
-     */
-    void setIdentifier(Identifier id);
-
-    /**
      * @return Identifier used to identify this viewer.
      */
     Identifier getIdentifier();
@@ -60,16 +53,16 @@ public interface StreamViewer {
     /**
      * Retrieve the start time of the underlying stream.
      *
-     * @return Start time in milliseconds.
+     * @return Get the offset for this stream viewer.
      */
-    long getStartTime();
+    long getOffset();
 
     /**
      * Set the start time of the underlying stream.
      *
-     * @param startTime Start time in milliseconds.
+     * @param offset Offset in milliseconds.
      */
-    void setStartTime(final long startTime);
+    void setOffset(final long offset);
 
     /**
      * Get the display window.
@@ -82,13 +75,6 @@ public interface StreamViewer {
      * Hides or shows the windows associated with this data viewer.
      */
     void setViewerVisible(boolean isVisible);
-    
-    /**
-     * Sets the data feed for this viewer.
-     *
-     * @param sourceFile The new data feed for this viewer.
-     */
-    void setSourceFile(final File sourceFile);
 
     /**
      * Return the file of the data.
@@ -108,38 +94,55 @@ public interface StreamViewer {
     void setFramesPerSecond(float framesPerSecond);
 
     /**
-     * @return The current position within the data feed in milliseconds.
+     * @return The current time in milliseconds.
      */
     long getCurrentTime();
 
     /**
-     * Plays the continuous data stream at the set speed.
+     * Plays the stream at the set rate
      */
-    void play();
+    void start();
 
     /**
-     * Stops the play back.
+     * Stops the play back of the data stream
      */
     void stop();
 
     /**
-     * Does this data viewer play?
+     * Steps foward
+     */
+    void stepForward();
+
+    /**
+     * Steps backward
+     */
+    void stepBackward();
+
+    /**
+     * Does this viewer play?
      */
     boolean isPlaying();
 
     /**
-     * Set the play back speed.
+     * Set rate
      *
      * @param speed Positive implies forwards, while negative implies reverse.
      */
-    void setPlaybackSpeed(float speed);
+    void setRate(float speed);
 
     /**
-     * Set the stream position.
+     * Get the playback rate.
      *
-     * @param position Position in milliseconds.
+     * @return playback rate.
      */
-    void seek(long position);
+    float getRate();
+
+    /**
+     * Set the stream time. If the time is out of range set to the next closest value in the stream.
+     *
+     * @param time Position in milliseconds.
+     */
+    void setCurrentTime(long time);
 
     /**
      * @return Custom track painter implementation. Must not return null.
@@ -176,9 +179,9 @@ public interface StreamViewer {
     void removeViewerStateListener(ViewerStateListener vsl);
 
     /**
-     * Used to query the data viewer for custom actions.
+     * Used to query the viewer for custom actions.
      *
-     * @return custom actions handler.
+     * @return custom actions.
      * @see CustomActionsAdapter
      */
     CustomActions getCustomActions();
@@ -187,40 +190,16 @@ public interface StreamViewer {
      * Unload all data, to prepare for being closed. Essentially the opposite
      * of setSourceFile. Call to reduce the data viewer to a low-resource state.
      */
-    void unsetSourceFile();
+    void close();
 
     /**
-     * Did we assume the frames per second play back rate?
+     * Did we assume the frames per second start back rate?
      *
      * @return True if we assumed the playback rate; otherwise false.
      */
     boolean isAssumedFramesPerSecond();
 
-    /**
-     * Use fake playback for this stream viewer.
-     *
-     * @return True if we can use fake play back; otherwise false.
-     */
-    boolean isEnableFakePlayback();
+    boolean isStepEnabled();
 
-    /**
-     * Enable fake play back.
-     *
-     * @param enableFakePlayback Boolean of fake play back.
-     */
-    void setEnableFakePlayback(boolean enableFakePlayback);
-
-    /**
-     * Is ths in fake play back.
-     *
-     * @return True if this viewer is in fake play back; otherwise false.
-     */
-    boolean isFakePlayback();
-
-    /**
-     * Set the fake play back.
-     *
-     * @param fakePlayback Fake play back state.
-     */
-    void setFakePlayback(boolean fakePlayback);
+    boolean isSeekPlaybackEnabled();
 }

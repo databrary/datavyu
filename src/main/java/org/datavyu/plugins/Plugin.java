@@ -23,11 +23,14 @@
 package org.datavyu.plugins;
 
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -38,7 +41,8 @@ public interface Plugin {
     /**
      * @return A new instance of the plugins data viewer.
      */
-    StreamViewer getNewStreamViewer(Frame parent, boolean modal);
+    StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
+                                    boolean modal);
 
     /**
      * @return The data viewer class.
@@ -46,7 +50,7 @@ public interface Plugin {
     Class<? extends StreamViewer> getViewerClass();
 
     /**
-     * @return The icon for representing this plugin. This can return null if
+     * @return The icon representing this plugin. This can return null if
      *         this plugin has no icon representing its type.
      */
     ImageIcon getTypeIcon();
@@ -55,6 +59,11 @@ public interface Plugin {
      * @return Plugin name.
      */
     String getPluginName();
+
+    /**
+     * @return Plugin UUID.
+     */
+    UUID getPluginUUID();
 
     /**
      *<p>A classifier string is a string representing the class of your plugin

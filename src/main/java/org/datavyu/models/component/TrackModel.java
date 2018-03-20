@@ -22,6 +22,8 @@
  */
 package org.datavyu.models.component;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
 
 import java.beans.PropertyChangeListener;
@@ -34,24 +36,26 @@ import java.util.*;
  */
 public final class TrackModel {
 
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(TrackModel.class);
+
     /** Enumeration of track states. */
     public enum TrackState {
-        NORMAL, // Track is in the normal state
-        SELECTED, // Track is in the selected state
-        SNAPPED // Track is in the snapped state
+        NORMAL,     // Track is in the normal state
+        SELECTED,   // Track is in the selected state
+        SNAPPED     // Track is in the snapped state
     }
 
-    /** Track identifier. */
-    private Identifier id;
+    /** Track identifier */
+    private Identifier identifier;
 
-    /** The duration of the track in milliseconds */
+    /** This is the duration of the track in milliseconds */
     private long duration;
 
-    /** The offset of the track in milliseconds */
-    private long offset; // TODO: Is this the current time or the initial offset of this track to all others?
+    /** This is the offset of this track with respect to other tracks in milliseconds */
+    private long offset;
 
     /** Track markers location in milliseconds that are sorted at all times */
-    //private List<Long> markers = new ArrayList<>();
     private Set<Long> markers = new TreeSet<>(new Comparator<Long>() {
         @Override
         public int compare(Long o1, Long o2) {
@@ -89,9 +93,9 @@ public final class TrackModel {
     /**
      * Copy constructor
      *
-     * @param trackModel Model to copy from.
+     * @param trackModel Model to copy from
      */
-    protected TrackModel(final TrackModel trackModel) {
+    private TrackModel(final TrackModel trackModel) {
         change = new PropertyChangeSupport(this);
         duration = trackModel.duration;
         offset = trackModel.offset;
@@ -101,7 +105,7 @@ public final class TrackModel {
         trackName = trackModel.trackName;
         state = trackModel.state;
         locked = trackModel.locked;
-        id = trackModel.id;
+        identifier = trackModel.identifier;
     }
 
     /**
@@ -179,6 +183,7 @@ public final class TrackModel {
      * @param offset the new offset.
      */
     public void setOffset(final long offset) {
+        logger.info("For track " + identifier + " set offset to " + offset + " milliseconds");
         long oldOffset = this.offset;
         this.offset = offset;
         change.firePropertyChange("offset", oldOffset, offset);
@@ -238,18 +243,6 @@ public final class TrackModel {
             change.firePropertyChange("markers", null, markers);
         }
     }
-
-    /**
-     * Adds multiple snap bookmark positions with one property change event.
-     * 
-     * @param markers new bookmark positions in milliseconds
-     */
-    public void addMarkers(final List<Long> markers) {
-        if (this.markers.addAll(markers)) {
-            // If any of the markers was added fire a change event
-            change.firePropertyChange("markers", null, this.markers);
-        }
-    }
     
     /**
      * Removes a snap marker position.
@@ -268,13 +261,6 @@ public final class TrackModel {
     		markers.clear();
 	        change.firePropertyChange("markers", null, markers);
     	}
-    }
-    
-    /**
-     * @return the trackName
-     */
-    public String getTrackName() {
-        return trackName;
     }
 
     /**
@@ -325,17 +311,17 @@ public final class TrackModel {
     }
 
     /**
-     * @param id Identifier to use.
+     * @param identifier Identifier to use.
      */
-    public void setId(final Identifier id) {
-        this.id = id;
+    public void setIdentifier(final Identifier identifier) {
+        this.identifier = identifier;
     }
 
     /**
      * @return Identifier of the track.
      */
-    public Identifier getId() {
-        return id;
+    public Identifier getIdentifier() {
+        return identifier;
     }
 
     /**

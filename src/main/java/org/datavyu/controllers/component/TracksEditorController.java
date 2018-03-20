@@ -29,45 +29,37 @@ import org.datavyu.views.component.TracksEditorPainter;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 
 /**
- * Tracks editor controller is responsible for managing multiple TrackController
- * instances.
+ * Manages multiple TrackController instances.
  */
 public final class TracksEditorController implements TrackMouseEventListener {
 
-    /**
-     * Main UI panel.
-     */
+    /** Main UI panel */
     private JPanel editingPanel;
 
-    /**
-     * UI component for displaying a snap position.
-     */
+    /** UI component for displaying a snap position */
     private final SnapMarkerController snapMarkerController;
 
-    /**
-     * List of track controllers.
-     */
+    /** List of track controllers */
     private final Map<Identifier, TrackController> tracks;
 
     private final MixerController mixerController;
+
     private final MixerModel mixerModel;
 
-    /**
-     * Handles the selection model for tracks.
-     */
+    /** Handles the selection model for tracks */
     private final CarriageSelection selectionHandler;
 
     /**
-     * Create a new tracks editor controller.
+     * Create a new tracks editor controller
      */
-    public TracksEditorController(final MixerController mixerController,
-                                  final MixerModel mixerModel) {
+    TracksEditorController(final MixerController mixerController, final MixerModel mixerModel) {
         tracks = Maps.newLinkedHashMap();
         this.mixerController = mixerController;
         this.mixerModel = mixerModel;
@@ -97,28 +89,42 @@ public final class TracksEditorController implements TrackMouseEventListener {
         return snapMarkerController.getView();
     }
 
+    public long getMinTime() {
+        long minTime = Long.MAX_VALUE;
+        for (TrackController trackController : tracks.values()) {
+            minTime = Math.min(minTime, trackController.getOffset());
+        }
+        return minTime;
+    }
+
+    public long getMaxTime() {
+        long maxTime = Long.MIN_VALUE;
+        for (TrackController trackController : tracks.values()) {
+            maxTime = Math.max(maxTime, trackController.getOffset() + trackController.getDuration());
+        }
+        return maxTime;
+    }
+
     /**
-     * Adds a new track to the interface.
+     * Adds a new track to the interface
      *
-     * @param icon         Icon associated with the track.
+     * @param icon         Icon associated with the track
      * @param trackId      Track identifier
-     * @param trackName    Name of the track.
-     * @param duration     Duration of the track in milliseconds.
-     * @param offset       Track offset in milliseconds.
+     * @param mediaPath    Path to the media file
+     * @param duration     Duration of the track in milliseconds
+     * @param offset       Track offset in milliseconds
      * @param listener     Register the listener interested in {@link CarriageEvent}.
-     *                     Null if uninterested.
-     * @param trackPainter The track painter to use.
+     *                     Null if uninterested
+     * @param trackPainter The track painter to use
      */
     public void addNewTrack(final Identifier trackId, final ImageIcon icon,
-                            final String trackName, final String mediaPath, final long duration,
+                            final File mediaPath, final long duration,
                             final long offset, final CarriageEventListener listener,
                             final TrackPainter trackPainter) {
 
         // TrackController
-        final TrackController trackController = new TrackController(mixerModel,
-                trackPainter);
-        trackController.setTrackInformation(trackId, icon, trackName, mediaPath,
-                duration, offset);
+        final TrackController trackController = new TrackController(mixerModel, trackPainter);
+        trackController.setTrackInformation(trackId, icon, mediaPath, duration, offset);
         trackController.addMarker(-1);
 
         if (duration < 0) {
@@ -165,12 +171,11 @@ public final class TracksEditorController implements TrackMouseEventListener {
     }
 
     /**
-     * Remove a specific track from the controller. Also unregisters the given
-     * listener from the track.
+     * Remove a specific track from the controller. Also unregisters the given listener from the track
      *
-     * @param trackId  track identifier.
-     * @param listener listener for carriage events.
-     * @return true if a track was removed, false otherwise.
+     * @param trackId  track identifier
+     * @param listener listener for carriage events
+     * @return true if a track was removed, false otherwise
      */
     public boolean removeTrack(final Identifier trackId, final CarriageEventListener listener) {
 
@@ -208,12 +213,10 @@ public final class TracksEditorController implements TrackMouseEventListener {
     }
 
     /**
-     * Sets the track offset for the given media if it exists. If offset
-     * snapping is enabled through {@link #setAllowSnap(boolean)}, then this
-     * function will attempt to synchronize the track position with every other
-     * track's position of interest. A position of interest includes time 0, start
-     * of a track, bookmarked positions, end of a track, and the current needle
-     * position.
+     * Sets the track offset for the given media if it exists. If offset snapping is enabled through,
+     * then this function will attempt to synchronize the track position with every other
+     * track's position of interest. A position of interest includes time 0, start of a track, bookmarked
+     * positions, end of a track, and the current needle position.
      *
      * @param trackId              Identifies a track
      * @param newOffset            New track offset position
@@ -251,8 +254,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
      * <ol>
      * <li>Compile a list of snap points for the given track.</li>
      * <li>Compile a list of candidate snap points from every other track.</li>
-     * <li>Find a snap position by comparing the snap points for the given track
-     * against every other track.</li>
+     * <li>Find a snap position by comparing the snap points for the given track against every other track.</li>
      * <li>A candidate snap point is chosen as the new offset value if it is
      * within +/- 5 seconds of the snap point being compared against.</li>
      * <li>If no snap points are found, then return null.</li>
@@ -298,18 +300,18 @@ public final class TracksEditorController implements TrackMouseEventListener {
         }
 
         // Compile track and candidate snap points
-        for (TrackController tc : tracks.values()) {
-            final List<Long> snapList = tc.getTrackModel().getId().equals(trackId) ? snapPoints : snapCandidates;
+        for (TrackController trackController : tracks.values()) {
+            final List<Long> snapList = trackController.getTrackModel().getIdentifier().equals(trackId) ? snapPoints : snapCandidates;
 
             // add the left side (start) of the track as a snap point
-            final long startTime = tc.getOffset();
+            final long startTime = trackController.getOffset();
 
             if (startTime > 0) {
                 snapList.add(startTime);
             }
 
             // add all of the bookmarks as snap points
-            for (Long bookmark : tc.getMarkers()) {
+            for (Long bookmark : trackController.getMarkers()) {
                 final long time = startTime + bookmark;
                 if (time > 0) {
                     snapList.add(time);
@@ -317,7 +319,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
             }
 
             // add the right side (end) of the track as a snap point
-            final long duration = tc.getDuration();
+            final long duration = trackController.getDuration();
             final long endTime = startTime + duration;
 
             if (endTime > 0) {
@@ -497,10 +499,10 @@ public final class TracksEditorController implements TrackMouseEventListener {
     }
 
     /**
-     * Set the movement lock state for a given track.
+     * Set the movement lock state for a given track
      *
-     * @param trackId Track id
-     * @param lock true if the track's movement is locked, false otherwise.
+     * @param trackId Track identifier
+     * @param lock true if the track's movement is locked, false otherwise
      */
     public void setMovementLock(final Identifier trackId, final boolean lock) {
         TrackController trackController = tracks.get(trackId);
@@ -510,12 +512,10 @@ public final class TracksEditorController implements TrackMouseEventListener {
     }
 
     /**
-     * Set the movement lock state for a given track. For backwards
-     * compatibility only.
+     * Set the movement lock state for a given track. For backwards compatibility only.
      *
-     * @param mediaPath Absolute path to the media file represented by the
-     *                  track.
-     * @param lock      true if the track's movement is locked, false otherwise.
+     * @param mediaPath Absolute path to the media file represented by the track
+     * @param lock      true if the track's movement is locked, false otherwise
      */
     @Deprecated
     public void setMovementLock(final String mediaPath, final boolean lock) {
@@ -531,23 +531,11 @@ public final class TracksEditorController implements TrackMouseEventListener {
      * Get the track model for a given identifier.
      *
      * @param trackId identifier used to search for the track
-     * @return null if there is no such track, the associated TrackModel
-     * otherwise.
+     * @return null if there is no such track, the associated TrackModel otherwise
      */
     public TrackModel getTrackModel(final Identifier trackId) {
         TrackController trackController = tracks.get(trackId);
         return (trackController != null) ? trackController.getTrackModel() : null;
-    }
-
-    /**
-     * @return A clone of all track models currently in uses.
-     */
-    public Iterable<TrackModel> getAllTrackModels() {
-        List<TrackModel> models = Lists.newArrayList();
-        for (TrackController trackController : tracks.values()) {
-            models.add(trackController.getTrackModel());
-        }
-        return models;
     }
 
     public boolean isAnyTrackUnlocked() {
@@ -557,16 +545,6 @@ public final class TracksEditorController implements TrackMouseEventListener {
             }
         }
         return tracks.isEmpty();
-    }
-
-    /**
-     * Used for tests through reflection.
-     *
-     * @return All track controllers.
-     */
-    @SuppressWarnings("unused")
-    private List<TrackController> getAllTrackControllers() {
-        return Lists.newArrayList(tracks.values());
     }
 
     /**
@@ -601,10 +579,10 @@ public final class TracksEditorController implements TrackMouseEventListener {
     private static class SnapPoint {
 
         /** The new snap offset position in milliseconds */
-        public long snapOffset;
+        long snapOffset;
 
         /** The snap marker position to paint */
-        public long snapMarkerPosition;
+        long snapMarkerPosition;
 
         public String toString() {
             return "[SnapPoint snapOffset=" + snapOffset + ", snapMarkerPosition=" + snapMarkerPosition + "]";

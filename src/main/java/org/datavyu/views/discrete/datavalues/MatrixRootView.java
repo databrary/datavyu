@@ -27,12 +27,14 @@ import org.datavyu.views.discrete.EditorTracker;
 
 import javax.swing.*;
 import javax.swing.undo.UndoableEdit;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * JTextArea view of the Matrix (database cell) data.

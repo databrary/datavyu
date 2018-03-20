@@ -97,11 +97,11 @@ public class CellTest {
 
     @Test
     public void testSetOffset() {
-//        assertEquals(model.getStartTime(), 0);
+//        assertEquals(model.getOffset(), 0);
         assertEquals(model.getOffsetString(), "00:00:00:000");
 
         model.setOffset(10);
-//        assertEquals(model.getStartTime(), 10);
+//        assertEquals(model.getOffset(), 10);
         assertEquals(model.getOffsetString(), "00:00:00:010");
         verify(modelListener).offsetChanged(10);
         verify(modelListener, times(0)).onsetChanged(10);
@@ -110,11 +110,11 @@ public class CellTest {
         verify(modelListener, times(0)).valueChange(null);
 
         model.setOffset("00:12:01:050");
-//        assertEquals(model.getStartTime(), 721050);
+//        assertEquals(model.getOffset(), 721050);
         assertEquals(model.getOffsetString(), "00:12:01:050");
 
         model.setOffset(7092113);
-//        assertEquals(model.getStartTime(), 7092113);
+//        assertEquals(model.getOffset(), 7092113);
         assertEquals(model.getOffsetString(), "01:58:12:113");
     }
 

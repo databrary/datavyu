@@ -16,6 +16,7 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
@@ -23,44 +24,41 @@ import java.io.File;
 
 
 /**
- * The viewer for a quicktime video file.
- * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
+ * The viewer for a quick time video file
  */
 public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
-    private long timeOfPrevSeek = 0;
-    /**
-     * The logger for this class.
-     */
+    private static final int NUM_RETRY_FOR_DURATION = 2;
+
+    /** The logger for this class */
     private static Logger logger = LogManager.getLogger(NativeOSXViewerDialog.class);
 
-    long prevSeekTime = -1;
-    /**
-     * The quicktime movie this viewer is displaying.
-     */
-    private NativeOSXPlayer movie;
+    /** The quick time native OSXPlayer */
+    private NativeOSXPlayer nativeOSXPlayer;
 
     private boolean seeking = false;
 
     private long duration = 0;
 
-    public NativeOSXViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
+    NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
 
-        movie = null;
+        logger.info("Set source file: "+ sourceFile.getAbsolutePath());
+        nativeOSXPlayer = new NativeOSXPlayer(sourceFile);
+        this.addNotify();
+        this.add(nativeOSXPlayer, BorderLayout.CENTER);
+        setSourceFile(sourceFile);
     }
 
     @Override
     protected void setPlayerVolume(final float volume) {
-
-        if (movie == null) {
-            return;
+        if (nativeOSXPlayer != null) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    nativeOSXPlayer.setVolume(volume, nativeOSXPlayer.id);
+                }
+            });
         }
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                movie.setVolume(volume, movie.id);
-            }
-        });
     }
 
     /**
@@ -68,61 +66,35 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      */
     @Override
     public long getDuration() {
-
-        // If we cannot read the duration of the video wait for 2 sec and the retry!
-        if (movie.getDuration(movie.id) < 0) {
-            try {
-                Thread.sleep(2000);
-            } catch (Exception e) {
-                logger.error("Thread slept. Error: ", e);
+        if (nativeOSXPlayer != null) {
+            for (int iRetry = 0; iRetry < NUM_RETRY_FOR_DURATION; ++iRetry) {
+                duration = nativeOSXPlayer.getDuration(nativeOSXPlayer.id);
+                if (duration > 0) {
+                    return duration;
+                }
+                try {
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    logger.info("Retry " + iRetry + " of duration read out failed.");
+                }
             }
         }
-
-        // Retry getting the duration after 2 sec wait time
-        if (duration == 0) {
-            duration = movie.getDuration(movie.id);
-        }
-
         return duration;
     }
 
     @Override
-    protected void setPlayerSourceFile(final File playerSourceFile) {
-
-        // Ensure that the native hierarchy is set up
-        this.addNotify();
-
-        movie = new NativeOSXPlayer(playerSourceFile);
-
-        this.add(movie, BorderLayout.CENTER);
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    // Make sure movie is actually loaded
-                    movie.setVolume(0.7F, movie.id);
-                } catch (Exception e) {
-                    // Oops! Back out
-                    NativeOSXPlayer.decPlayerCount();
-                    throw e;
-                }
-            }
-        });
-    }
-
-    @Override
     protected Dimension getOriginalVideoSize() {
-        System.err.println(movie.id);
-        return new Dimension((int) movie.getMovieWidth(movie.id), (int) movie.getMovieHeight(movie.id));
+        System.err.println(nativeOSXPlayer.id);
+        return new Dimension((int) nativeOSXPlayer.getMovieWidth(nativeOSXPlayer.id), (int) nativeOSXPlayer.getMovieHeight(nativeOSXPlayer.id));
     }
 
     @Override
     protected float getPlayerFramesPerSecond() {
-        float fps = movie.getFPS(movie.id);
+        float fps = nativeOSXPlayer.getFPS(nativeOSXPlayer.id);
         if (fps <= 1) {
             try {
                 Thread.sleep(2000);
-                fps = movie.getFPS(movie.id);
+                fps = nativeOSXPlayer.getFPS(nativeOSXPlayer.id);
                 if(fps > 1) {
                     return fps;
                 }
@@ -132,37 +104,38 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             isAssumedFramesPerSecond = true;
             return 29.97f;
         }
-        return movie.getFPS(movie.id);
+        return nativeOSXPlayer.getFPS(nativeOSXPlayer.id);
     }
 
     @Override
-    public void setPlaybackSpeed(final float rate) {
-        super.setPlaybackSpeed(rate);
+    public void setRate(final float rate) {
+        super.setRate(rate);
+        nativeOSXPlayer.setRate(rate, nativeOSXPlayer.id);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void play() {
-        super.play();
-        logger.info("Playing at speed: " + getPlaybackSpeed());
+    public void start() {
+        logger.info("Playing at speed: " + getRate());
 
         try {
-            if (movie != null) {
+            if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if (movie.getRate(movie.id) != 0) {
-                            movie.stop(movie.id);
+                        //We don't need this if statement
+                        if(nativeOSXPlayer.getRate(nativeOSXPlayer.id) == 0){
+                            nativeOSXPlayer.stop(nativeOSXPlayer.id);
                         }
-                        movie.setRate(getPlaybackSpeed(), movie.id);
+                        nativeOSXPlayer.setRate(getRate(), nativeOSXPlayer.id);
                     }
                 });
             } else {
-                logger.info("No movie loaded!");
+                logger.info("No nativeOSXPlayer loaded!");
             }
         } catch (Exception e) {
-            logger.error("Unable to play! Error: ", e);
+            logger.error("Unable to start! Error: ", e);
         }
     }
 
@@ -171,16 +144,15 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      */
     @Override
     public void stop() {
-        super.stop();
         logger.info("Player stopped");
         final double time = System.currentTimeMillis();
         try {
 
-            if (movie != null) {
+            if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         logger.info("STOPPING EXECUTING AT: " + (System.currentTimeMillis() - time));
-                        movie.stop(movie.id);
+                        nativeOSXPlayer.stop(nativeOSXPlayer.id);
                         logger.info("STOPPED EXECUTION AT: " + (System.currentTimeMillis() - time));
                     }
                 });
@@ -194,38 +166,38 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void seek(final long position) {
+    public void setCurrentTime(final long time) {
 
-        // TODO: Check what is this 35 magic (this seems the only place)?
-        if(System.currentTimeMillis() - timeOfPrevSeek < 35) {
+/*        // Throttle the seek rate to 1/35 milliseconds or 1/0.035 Hz
+        if (System.currentTimeMillis() - timeOfPrevSeek < 35) {
             return;
-        }
+        }*/
+        // This should be handled by the seeking == TRUE
 
         if (!seeking) {
             seeking = true;
             try {
-                if (movie != null) {
-                    prevSeekTime = position;
+                if (nativeOSXPlayer != null) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            logger.info("Seeking to position: " + position);
+                            logger.info("Seeking to position: " + time +" Is playing: "+ isPlaying());
                             boolean wasPlaying = isPlaying();
-                            float prevRate = getPlaybackSpeed();
+                            float prevRate = getRate();
                             if (isPlaying()) {
-                                movie.stop(movie.id);
+                                nativeOSXPlayer.stop(nativeOSXPlayer.id);
                             }
                             if (prevRate >= 0 && prevRate <= 8) {
-                                movie.setTimePrecise(position, movie.id);
+                                nativeOSXPlayer.setTimePrecise(time, nativeOSXPlayer.id);
                             } else if (prevRate < 0  && prevRate > -8) {
-                                movie.setTimeModerate(position, movie.id);
+                                nativeOSXPlayer.setTimeModerate(time, nativeOSXPlayer.id);
                             } else {
-                                movie.setTime(position, movie.id);
+                                nativeOSXPlayer.setTime(time, nativeOSXPlayer.id);
                             }
                             if (wasPlaying) {
-                                movie.setRate(prevRate, movie.id);
+                                nativeOSXPlayer.setRate(prevRate, nativeOSXPlayer.id);
                             }
-                            movie.repaint();
-                            timeOfPrevSeek = System.currentTimeMillis();
+                            nativeOSXPlayer.repaint();
+                            //timeOfPrevSeek = System.currentTimeMillis();
                             seeking = false;
                         }
                     });
@@ -241,19 +213,24 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      */
     @Override
     public long getCurrentTime() {
-
         try {
-            return movie.getCurrentTime(movie.id);
+            return nativeOSXPlayer.getCurrentTime(nativeOSXPlayer.id);
         } catch (Exception e) {
             logger.error("Unable to get time", e);
         }
-
         return 0;
     }
 
     @Override
-    protected void cleanUp() {
-        // TODO: Check if the release is required?
-//        movie.release();
+    protected void cleanUp() { }
+
+    @Override
+    public boolean isPlaying() {
+        return !nativeOSXPlayer.isPlaying(nativeOSXPlayer.id); // the native os plugin return false when is playing
+    }
+
+    @Override
+    public boolean isSeekPlaybackEnabled() {
+        return playBackRate > 2F || playBackRate < 0F;
     }
 }

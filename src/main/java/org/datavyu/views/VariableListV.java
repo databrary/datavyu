@@ -76,7 +76,7 @@ public final class VariableListV extends DatavyuDialog
     private javax.swing.JLabel changeInstructions;
 
     /**
-     * Mapping between database column id - to the table model.
+     * Mapping between database column identifier - to the table model.
      */
     private HashBiMap<Variable, Integer> dbToTableMap;
 

@@ -39,48 +39,38 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 /**
  * A view for editing the database vocab.
  */
 public final class VocabEditorV extends DatavyuDialog {
 
-    /**
-     * The logger for this class.
-     */
+    /** The logger for this class */
     private static Logger LOGGER = LogManager.getLogger(VocabEditorV.class);
-    /**
-     * Model
-     */
-    DataStore ds;
-    /**
-     * All the vocab views displayed in the editor.
-     */
+
+    /** Data store for the annotations of streams */
+    private DataStore dataStore;
+
+    /** All the vocab views displayed in the editor */
     private List<VocabElementV> veViews;
-    /**
-     * The currently selected vocab element.
-     */
+
+    /** The currently selected vocab element */
     private VocabElementV selectedVocabElement;
-    /**
-     * The currently selected formal argument.
-     */
+
+    /** The currently selected formal argument */
     private FormalArgEditor selectedArgument;
-    /**
-     * Index of the currently selected formal argument within the element.
-     */
+
+    /** Index of the currently selected formal argument within the element */
     private int selectedArgumentI;
-    /**
-     * Vertical frame for holding the current listing of Vocab elements.
-     */
+
+    /** Vertical frame for holding the current listing of Vocab elements */
     private JPanel verticalFrame;
-    /**
-     * The handler for all keyboard shortcuts
-     */
+
+    /** The handler for all keyboard shortcuts */
     private KeyEventDispatcher ked;
-    /**
-     * Swing components.
-     */
+
+    /** Swing components */
     private JButton addCodeButton;
     private JButton addColumnButton;
     private JButton closeButton;
@@ -108,7 +98,7 @@ public final class VocabEditorV extends DatavyuDialog {
         super(parent, modal);
 
         LOGGER.info("vocEd - show");
-        ds = Datavyu.getProjectController().getDataStore();
+        dataStore = Datavyu.getProjectController().getDataStore();
 
         initComponents();
         componentListnersInit();
@@ -185,13 +175,13 @@ public final class VocabEditorV extends DatavyuDialog {
 
     private void makeElements() {
         // Populate current vocab list with vocab data from the database.
-        ds = Datavyu.getProjectController().getDataStore();
+        dataStore = Datavyu.getProjectController().getDataStore();
         veViews = new ArrayList<VocabElementV>();
         verticalFrame = new JPanel();
         verticalFrame.setName("verticalFrame");
         verticalFrame.setLayout(new BoxLayout(verticalFrame, BoxLayout.Y_AXIS));
 
-        for (Variable var : ds.getAllVariables()) {
+        for (Variable var : dataStore.getAllVariables()) {
             Argument argument = var.getRootNode();
             if (argument.type.equals(Argument.Type.MATRIX)) {
                 VocabElementV matrixV = new VocabElementV(argument, var, this);
@@ -240,7 +230,7 @@ public final class VocabEditorV extends DatavyuDialog {
             LOGGER.info("vocEd - add column");
 
             // perform the action
-            Variable v = ds.createVariable(varName, Argument.Type.MATRIX);
+            Variable v = dataStore.createVariable(varName, Argument.Type.MATRIX);
             // Need to get the template from the variable.
             //Matrix m = v.getCellValue();
             //m.createArgument(Argument.type.NOMINAL);
@@ -806,7 +796,7 @@ public final class VocabEditorV extends DatavyuDialog {
      * Determine what action to perform when a VocabElement is removed from the vocab list
      *
      * @param db the current database
-     * @param VEID the id of the vocab element to be deleted
+     * @param VEID the identifier of the vocab element to be deleted
      *//*
     @Override
     public void VLDeletion(Database db, long VEID) {
@@ -837,7 +827,7 @@ public final class VocabEditorV extends DatavyuDialog {
      * Determine what action to perform when a VocabElement is replaced in the vocab list
      *
      * @param db the database currently being used
-     * @param VEID the id of the vocab element that has changed
+     * @param VEID the identifier of the vocab element that has changed
      *//*
     @Override
     public void VLReplace(Database db, long VEID) {
@@ -862,7 +852,7 @@ public final class VocabEditorV extends DatavyuDialog {
      * Determine what action to perform when a VocabElement is added to the vocab list
      *
      * @param db the current database
-     * @param VEID the id of the vocab element being inserted
+     * @param VEID the identifier of the vocab element being inserted
      *//*
     @Override
     public void VLInsertion(Database db, long VEID) {

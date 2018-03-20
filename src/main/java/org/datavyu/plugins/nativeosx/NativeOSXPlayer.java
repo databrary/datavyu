@@ -3,7 +3,6 @@ package org.datavyu.plugins.nativeosx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.mplayer.MPlayerDataViewerDialog;
 import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.*;
@@ -11,7 +10,7 @@ import java.io.File;
 
 public class NativeOSXPlayer extends Canvas {
 
-    private static Logger logger = LogManager.getLogger(MPlayerDataViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(NativeOSXPlayer.class);
 
     private static int playerCount = 0;
 

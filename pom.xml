@@ -930,7 +930,7 @@
         </dependency>
 
         <!-- Apache Commons Lang, a package of Java utility classes -->
-        <!-- commons-lang was moved to org.apache.commons under id commons-lang3 -->
+        <!-- commons-lang was moved to org.apache.commons under identifier commons-lang3 -->
         <!-- Artifact: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <!-- Documentation: https://commons.apache.org/proper/commons-lang/javadocs/api-release/index.html -->
         <!-- Updated here: 09/19/2017 -->
@@ -938,6 +938,16 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.6</version>
+        </dependency>
+
+        <!-- Apache Commons text, a package of Java utility classes -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+        <!-- Documentation: http://commons.apache.org/proper/commons-text/javadocs/api-release/index.html -->
+        <!-- Updated here: 01/28/2018 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.2</version>
         </dependency>
 
         <!-- Deprecated, see https://lists.apple.com/archives/quicktime-java/2008/Jun/msg00018.html -->
@@ -1009,6 +1019,29 @@
             <version>2.9.0</version>
         </dependency>
 
+        <!-- JSON Parser -->
+        <!-- Artifact: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <!-- Updated here: 02/15/2018  -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
+        <dependency>
+            <!-- Note: core-annotations version x.y.0 is generally compatible with
+                 (identical to) version x.y.1, x.y.2, etc. -->
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-libs</artifactId>
@@ -1018,7 +1051,7 @@
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-plugin</artifactId>
-            <version>0.10</version>
+            <version>0.16</version>
         </dependency>
 
         <!-- Updates with JRE from java version >= 1.7 -->

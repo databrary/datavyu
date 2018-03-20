@@ -38,9 +38,3 @@ mvn -Prelease,win-package -Dmaven.test.skip=true clean jfx:native
 # If you want a zip you can add the following targets to the build command
 #   package assembly:assembly
 #
-# For debugging purposes etc. you may want to setup up a maven configuration in Intellij
-# Follow these steps:
-# Next to the run button click on the drop-down menu item 'Edit configuration'
-# In the dialog select on the left-hand side '+' and select 'maven'
-# Fill out working directory: C:/Users/Florian/integration/datavyu (yours is different)
-# Command line: -Dmaven.test.skip=true clean compile jfx:run (for now we exclude tests)

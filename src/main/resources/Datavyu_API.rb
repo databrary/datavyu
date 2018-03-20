@@ -2241,8 +2241,8 @@ alias :transferVariable :transfer_columns
 #     File object if a file is already started.
 # @return [nil]
 # @example
-#   check_rel("trial", "rel.trial", "trialnum", 100, "/Users/motoruser/Desktop/Relcheck.txt")
-#   check_rel("trial", "rel.trial", "trialnum", 100)
+#   check_reliability("trial", "rel.trial", "trialnum", 100, "/Users/motoruser/Desktop/Relcheck.txt")
+#   check_reliability("trial", "rel.trial", "trialnum", 100)
 def check_reliability(main_col, rel_col, match_arg, time_tolerance, *dump_file)
   # Make the match_arg conform to the method format that is used
   if ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].include?(match_arg[0].chr)
@@ -2329,6 +2329,62 @@ alias :checkReliability :check_reliability
 alias :check_rel :check_reliability
 alias :checkRel :check_reliability
 
+
+# Check reliability for a continuous coding pass. Merge the two coders' columns and
+# filter out the agreements. Returns a column with cells for regions where coders disagreed.
+# @param pri_col [String, RColumn] Primary's coder's column
+# @param rel_col [String, RColumn] Reliability coder's column
+# @param block_col [String, RColumn] Column containing coding block. Use nil if none.
+# @param time_threshold [Integer] The amount of slack you allow, in milliseconds, for difference between onset and offset before it is considered a disagreement.
+# @param codes_to_check [Array<String>] List of codes to compare between the coders
+# @return [RColumn] column with cells for disagreements
+# @example
+#   check_reliability_continuous('reach', 'reach_rel', 'reach_blocks', 100, 'hand', 'touch')
+# @since 1.3.9
+def check_reliability_continuous(pri_col, rel_col, block_col, time_threshold, *codes_to_check)
+  p_col = (pri_col.class == String)? get_column(pri_col) : pri_col
+  r_col = (rel_col.class == String)? get_column(rel_col) : rel_col
+  unless (block_col.nil? || block_col == '')
+    b_col = (block_col.class == String)? get_column(block_col) : block_col
+  end
+
+  raise "Invalid columns" unless p_col.class == RColumn && r_col.class == RColumn
+
+  # Build a set to store tuples of (onset,offset).  We need this to find cells with duration
+  # less than mutex_threshold that have been entirely missed by one of the coders.
+  interval_map = (p_col.cells + r_col.cells).map{ |x| [x.onset.to_i,x.offset.to_i] }.uniq
+
+  m_col = merge_columns('disagreements', pri_col, rel_col)
+
+  # Remove cells not contained by block column
+  unless b_col.nil?
+    m_col.cells.reject! do |slice|
+      !(b_col.cells.any?{ |x| x.contains(slice) } )
+    end
+  end
+
+  p_prefix = p_col.name.downcase
+  r_prefix = r_col.name.downcase
+  # Iterate over merged column cells and filter out agreements.
+  m_col.cells.reject! do |slice|
+    dur = slice.duration
+    num_coders = [slice.get_code("#{p_prefix}_ordinal"), slice.get_code("#{r_prefix}_ordinal")].reject{ |x| x == '' }.size
+
+    whole_cell = interval_map.include?([slice.onset, slice.offset])
+
+    pri_codes = codes_to_check.map{ |x| slice.get_code("#{p_prefix}_#{x}") }
+    rel_codes = codes_to_check.map{ |x| slice.get_code("#{r_prefix}_#{x}") }
+    code_differs = pri_codes.zip(rel_codes).any?{ |pair| pair.first != pair.last }
+
+    flag_duration = (num_coders == 1) && (dur >= time_threshold)
+    flag_missed = (num_coders == 1) && whole_cell
+    flag_code = (num_coders == 2) && code_differs
+    # p [flag_duration, flag_missed, flag_code]
+    !(flag_duration || flag_missed || flag_code)
+  end
+
+  return m_col
+end
 
 # Do a quick, in Datavyu, check of valid codes.
 # @param var [String, RColumn] name of column to check

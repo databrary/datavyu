@@ -68,10 +68,8 @@ final class RateController {
         List<Float> rates = jump < 0 ? smallerRates(currentRate) : largerRates(currentRate);
         float nextRate = currentRate;
         Iterator<Float> rate = rates.iterator();
-        int sub = jump < 0 ? -1 : 1; // Get the correct increment
-        while (rate.hasNext() && Math.abs(jump) > 0) {
+        for (int jumps = 0; rate.hasNext() && jumps < Math.abs(jump); ++jumps) {
             nextRate = rate.next();
-            jump -= sub;
         }
         return nextRate;
     }

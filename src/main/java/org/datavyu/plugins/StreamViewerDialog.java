@@ -17,6 +17,7 @@ package org.datavyu.plugins;
 import net.miginfocom.swing.MigLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
 import org.datavyu.models.Identifier;
 import org.datavyu.views.DatavyuDialog;
 import org.datavyu.views.component.DefaultTrackPainter;
@@ -63,7 +64,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /** List of listeners interested in changes made to the project */
     private final List<ViewerStateListener> viewerListeners = new LinkedList<>();
 
-    /** Volume for play back in dB? */
+    /** Volume for start back in dB? */
     protected float volume = 1f;
 
     /** Controls visibility */
@@ -76,20 +77,13 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     private Dimension originalVideoSize;
 
     /** The playback speed */
-    protected float playBackSpeed = 0;
+    protected float playBackRate = 0;
 
     /** Frames per second */
     private float framesPerSecond = -1;
 
-    /** Start time of stream in milliseconds */
-    // TODO: Why do we have this startTime? Is it the current time in the stream?
-    private long startTime = 0;
-
-    /** Is this movie currently playing? */
-    protected boolean playing = false;
-
     /** The current video file */
-    private File sourceFile;
+    protected File sourceFile;
 
     /** Volume slider */
     private JSlider volumeSlider;
@@ -125,23 +119,28 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     private JPopupMenu menuForResize = new JPopupMenu();
 
     /** Identifier of this data viewer */
-    private Identifier id;
+    private Identifier identifier;
 
-    /** Enable fake playback for this stream viewer */
-    private boolean enableFakePlayback;
-
-    /** Is this stream viewer is in fake play back*/
-    private boolean fakePlayback;
+    /** The offset of this stream viewer wrt to the others */
+    // Offset gets updated when the user pushes the bar through 'handleCarriageOffsetChangeEvent' in the VideoController
+    private long offset;
 
     /**
      * Constructs a base data video viewer.
      */
-    public StreamViewerDialog(final Frame parent, final boolean modal) {
+    public StreamViewerDialog(Identifier identifier, final Frame parent, final boolean modal) {
 
         super(parent, modal);
 
-        startTime = 0;
-        playing = false;
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(final KeyEvent e) {
+                return Datavyu.getApplication().dispatchKeyEvent(e);
+            }
+        });
+
+        this.identifier = identifier;
+        offset = 0;
 
         volumeButton = new JButton();
         volumeButton.setIcon(getVolumeButtonIcon());
@@ -203,26 +202,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         initComponents();
     }
 
-    @Override
-    public void setEnableFakePlayback(boolean enableFakePlayback) {
-        this.enableFakePlayback = enableFakePlayback;
-    }
-
-    @Override
-    public boolean isEnableFakePlayback() {
-        return enableFakePlayback;
-    }
-
-    @Override
-    public void setFakePlayback(boolean fakePlayback) {
-        this.fakePlayback = fakePlayback;
-    }
-
-    @Override
-    public boolean isFakePlayback() {
-        return fakePlayback;
-    }
-
     private void handleVolumeSliderEvent(final ChangeEvent e) {
         volume = volumeSlider.getValue() / 100F;
         setVolume();
@@ -249,14 +228,12 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     protected abstract void setPlayerVolume(float volume);
 
-    protected abstract void setPlayerSourceFile(final File playerSourceFile);
-
     protected abstract Dimension getOriginalVideoSize();
 
     /**
      * {@inheritDoc}
      */
-    public abstract void seek(final long position);
+    public abstract void setCurrentTime(final long time);
 
     protected abstract float getPlayerFramesPerSecond();
 
@@ -277,17 +254,20 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     @Override
     public void validate() {
-
         // BugzID:753 - Locks the window to the videos aspect ratio.
         int newHeight = getHeight();
         int newWidth = (int) (getVideoHeight() * getAspectRatio()) + getInsets().left + getInsets().right;
         setSize(newWidth, newHeight);
-
         super.validate();
     }
 
     /**
      * Resize the video to the desired scale.
+     *
+     * Note, this resize is ONLY used by the zoom functions in the dialog.
+     *
+     * The plugins are responsible for detecting any changes that happen on the window and adjusting their size
+     * accordingly. A resize is NOT handled through this method.
      *
      * @param scale The new ratio to scale to, where 1.0 = original size, 2.0 = 200% zoom, etc.
      */
@@ -312,8 +292,8 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
      *
      * @return
      */
-    public int getVideoHeight() {
-        // TODO:Have variables for JUST the video size
+    private int getVideoHeight() {
+        // TODO: Have variables for JUST the video size
         return getHeight() - getInsets().bottom - getInsets().top;
     }
 
@@ -336,23 +316,20 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         validate();
     }
 
-    public int getVideoWidth() {
-        return getWidth() - getInsets().left - getInsets().right;
-    }
-
     /**
      * @return The playback startTime of the movie in milliseconds.
      */
-    public long getStartTime() {
-        return startTime;
+    public long getOffset() {
+        return offset;
     }
 
     /**
-     * @param offset The playback startTime of the movie in milliseconds.
+     * @param newOffset The playback startTime of the movie in milliseconds.
      */
-    public void setStartTime(final long offset) {
-        this.startTime = offset;
-        // TODO: Should set startTime in stream?
+    public void setOffset(final long newOffset) {
+        logger.info("Set offset of stream viewer with " + identifier + " to " + newOffset);
+        // TODO: This set is communicated to the TrackController (if it does not come from there)
+        offset = newOffset;
     }
 
     /**
@@ -362,10 +339,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         return this;
     }
 
-    public float getDetectedFrameRate() {
-        return getPlayerFramesPerSecond();
-    }
-
     /**
      * @return The file used to display this data feed.
      */
@@ -373,8 +346,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         return sourceFile;
     }
 
-    @Override
-    public void setSourceFile(final File sourceFile) {
+    protected void setSourceFile(final File sourceFile) {
         this.sourceFile = sourceFile;
         setTitle(sourceFile.getName());
         setName(getClass().getSimpleName() + "-" + sourceFile.getName());
@@ -384,7 +356,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         // BugzID:679 + 2407: Need to make the window visible before we know the
         // dimensions because of a QTJava bug
         setViewerVisible(true);
-        setPlayerSourceFile(sourceFile);
 
         originalVideoSize = getOriginalVideoSize();
         logger.info("Setting video size to:" + originalVideoSize);
@@ -399,7 +370,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         logger.info("Frames per second: " + framesPerSecond);
 
         // Display the first frame
-        seek(0L);
+        setCurrentTime(0L);
     }
 
     /**
@@ -414,36 +385,17 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         isAssumedFramesPerSecond = false;
     }
 
-    public float getPlaybackSpeed() {
-        return playBackSpeed;
+    @Override
+    public float getRate() {
+        return playBackRate;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setPlaybackSpeed(final float speed) {
-        playBackSpeed = speed;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void play() {
-        playing = true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void stop() {
-        playing = false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isPlaying() {
-        return playing;
+    @Override
+    public void setRate(final float speed) {
+        playBackRate = speed;
     }
 
     /**
@@ -491,9 +443,10 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         try {
             settings.load(is);
 
-            String property = settings.getProperty("startTime");
+            // TODO: How does this offset get propagated to the TracksEditorController
+            String property = settings.getProperty("offset");
             if ((property != null) && !property.equals("")) {
-                setStartTime(Long.parseLong(property));
+                setOffset(Long.parseLong(property));
             }
 
             property = settings.getProperty("volume");
@@ -523,7 +476,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     public void storeSettings(final OutputStream os) {
         Properties settings = new Properties();
-        settings.setProperty("startTime", Long.toString(getStartTime()));
+        settings.setProperty("offset", Long.toString(getOffset()));
         settings.setProperty("volume", Float.toString(volume));
         settings.setProperty("visible", Boolean.toString(isVisible));
         settings.setProperty("height", Integer.toString(getVideoHeight()));
@@ -580,16 +533,11 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     @Override
     public Identifier getIdentifier() {
-        return id;
+        return identifier;
     }
 
     @Override
-    public void setIdentifier(final Identifier id) {
-        this.id = id;
-    }
-
-    @Override
-    public void unsetSourceFile() {
+    public void close() {
         cleanUp();
     }
 
@@ -602,5 +550,25 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     public boolean isAssumedFramesPerSecond() {
         return isAssumedFramesPerSecond;
+    }
+
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void stepForward() {
+        // Nothing to do here
+    }
+
+    @Override
+    public void stepBackward() {
+        // Nothing to do here
+    }
+
+    @Override
+    public boolean isSeekPlaybackEnabled() {
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 lib/
 target
 test.txtDB
+*.dll
 *.log
 *.DS_Store
 *._.DS_Store
@@ -35,5 +36,21 @@ QTKitPlayer/build
 QTKitPlayer/resources
 src/main/resources/doc
 src/main/resources/.yardoc
+# Intellij
+.idea/
+*.iml
+*.iws
+modules.xml
+*.ipr
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+# IntelliJ
+/out/
 quaqua64.jnilib
 NativeOSXCanvas.jnilib

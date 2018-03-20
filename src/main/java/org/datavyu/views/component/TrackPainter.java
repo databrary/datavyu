@@ -46,39 +46,39 @@ public abstract class TrackPainter extends JComponent
     implements PropertyChangeListener {
 
     /** Fill colour of a carriage in the unselected/normal state */
-    protected static final Color DEFAULT_NORMAL_CARRIAGE_COLOR = new Color(169,
+    private static final Color DEFAULT_NORMAL_CARRIAGE_COLOR = new Color(169,
             218, 248);
 
     /** Outline colour of a carriage in the unselected/normal state */
-    protected static final Color DEFAULT_NORMAL_OUTLINE_COLOR = new Color(129,
+    private static final Color DEFAULT_NORMAL_OUTLINE_COLOR = new Color(129,
             167, 188);
 
     /** Fill colour of a carriage in the selected state */
-    protected static final Color DEFAULT_SELECTED_CARRIAGE_COLOR = new Color(
+    private static final Color DEFAULT_SELECTED_CARRIAGE_COLOR = new Color(
             138, 223, 162);
 
     /** Outline colour of a carriage in the selected state */
-    protected static final Color DEFAULT_SELECTED_OUTLINE_COLOR = new Color(105,
+    private static final Color DEFAULT_SELECTED_OUTLINE_COLOR = new Color(105,
             186, 128);
 
     /** Color schemes. */
     /** Normal carriage color. */
-    protected Color normalCarriageColor;
+    private Color normalCarriageColor;
 
     /** Normal carriage outline color. */
-    protected Color normalOutlineColor;
+    private Color normalOutlineColor;
 
     /** Selected carriage color. */
-    protected Color selectedCarriageColor;
+    private Color selectedCarriageColor;
 
     /** Selected carriage outline color. */
-    protected Color selectedOutlineColor;
+    private Color selectedOutlineColor;
 
     /** Painted region of the carriage */
-    protected GeneralPath carriagePolygon;
+    private GeneralPath carriagePolygon;
 
     /** Model containing information specific to the track painter. */
-    protected TrackModel trackModel;
+    private TrackModel trackModel;
 
     /** Model containing information about visibility parameters. */
     protected MixerModel mixerModel;
@@ -108,11 +108,6 @@ public abstract class TrackPainter extends JComponent
     public final void setTrackModel(final TrackModel model) {
         trackModel = model;
         repaint();
-    }
-
-    public void deregister() {
-        mixerModel.removePropertyChangeListener(this);
-        mixerModel = null;
     }
 
     /**
