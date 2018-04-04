@@ -2340,7 +2340,7 @@ alias :checkRel :check_reliability
 # @return [RColumn] column with cells for disagreements
 # @example
 #   check_reliability_continuous('reach', 'reach_rel', 'reach_blocks', 100, 'hand', 'touch')
-# @since 1.3.9
+# @since 1.4.0
 def check_reliability_continuous(pri_col, rel_col, block_col, time_threshold, *codes_to_check)
   p_col = (pri_col.class == String)? get_column(pri_col) : pri_col
   r_col = (rel_col.class == String)? get_column(rel_col) : rel_col
@@ -2528,7 +2528,7 @@ alias :checkValidCodes2 :check_valid_codes2
 
 # Check valid codes on cells in a column using regex. Not backwards-compatible with check_valid_codes().
 # @since 1.3.5
-# @param [Hash] map The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
+# @param map [Hash] The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Omit to print only to console.
 # @return number of detected errors
 # @return a list containing all error messages
@@ -2688,7 +2688,7 @@ alias :printCellCodes :print_cell_codes
 alias :printCellArgs :print_cell_codes
 
 # Delete a cell from the spreadsheet
-# @param [RCell] cell
+# @param cell [RCell] Cell to delete
 # @return [nil]
 def delete_cell(cell)
   cell.db_cell.getVariable.removeCell(cell.db_cell)
@@ -2723,8 +2723,8 @@ end
 alias :getDatavyuVersion :get_datavyu_version
 
 # Check whether current Datavyu version falls within the specified minimum and maximum versions (inclusive)
-# @param [String] minVersion Minimum version (e.g. 'v:1.3.5')
-# @param [String] maxVersion Maximum version. If unspecified, no upper bound is checked.
+# @param minVersion [String] Minimum version (e.g. 'v:1.3.5')
+# @param maxVersion [String] Maximum version. If unspecified, no upper bound is checked.
 # @return [true, false] true if min,max version check passes; false otherwise.
 def check_datavyu_version(minVersion, maxVersion = nil)
   currentVersion = get_datavyu_version()
@@ -2736,8 +2736,8 @@ end
 alias :checkDatavyuVersion :check_datavyu_version
 
 # Return list of *.opf files from given directory.
-# @param [String] dir directory to check
-# @param [true, false] recurse true to check subfolders, false to only check given folder
+# @param dir [String] directory to check
+# @param recurse [true, false] true to check subfolders, false to only check given folder
 # @return [Array<String>] list containing names of .opf files.
 # @note When recurse is set true, names of Datavyu files in nested folders will be the relative path from the starting directory; e.g. 'folder1/folder2/my_datavyu_file.opf'
 # @example
@@ -2750,15 +2750,17 @@ def get_datavyu_files_from(dir, recurse=false)
 end
 
 # Hide the given columns in the spreadsheet
-# @param [Array<String>] names of columns to hide
+# @param names [Array<String>] names of columns to hide
 def hide_columns(*names)
+  names.flatten!
   valid_names = names & get_column_list
   valid_names.each{ |x| $db.getVariable(x).setHidden(true)}
 end
 
 # Show the given columns in the spreadsheet
-# @param [Array<String>] names of columns to show
+# @param names [Array<String>] names of columns to show
 def show_columns(*names)
+  names.flatten!
   valid_names = names & get_column_list
-  valid_names.each{ |x| $db.getVariable(name).setHidden(false) }
+  valid_names.each{ |x| $db.getVariable(x).setHidden(false) }
 end
