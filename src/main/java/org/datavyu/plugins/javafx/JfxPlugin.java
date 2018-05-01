@@ -78,7 +78,7 @@ public class JfxPlugin implements Plugin {
 
     @Override
     public ImageIcon getTypeIcon() {
-        return new ImageIcon(getClass().getResource("/icons/vlc_cone.png"));
+        return new ImageIcon(getClass().getResource("/icons/JavaFX-Icon32.png"));
     }
 
     @Override
