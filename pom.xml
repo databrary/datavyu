@@ -1101,7 +1101,14 @@
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-libs</artifactId>
-            <version>0.5-20180801.160616-1</version>
+            <version>0.5</version>
+        </dependency>
+
+        <!-- SDl 2.0.8 -->
+        <dependency>
+            <groupId>datavyu</groupId>
+            <artifactId>sdl-libs</artifactId>
+            <version>0.1</version>
         </dependency>
 
         <!-- This is a beta version of the FFmpeg plugin 0.18-SNAPSHOT -->
