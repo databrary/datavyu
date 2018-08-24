@@ -149,7 +149,7 @@ public class FFmpegPlayer extends JPanel {
 	 */
 	public void stepForward() {
 	    logger.info("Step forward.");
-		mediaPlayer.stepForward();
+//		mediaPlayer.stepForward();
 	}
 
 	public void stepBackward() {
@@ -164,8 +164,15 @@ public class FFmpegPlayer extends JPanel {
 	 * @param volume New volume to set.
 	 */
 	public void setVolume(float volume) {
-		//TODO(Reda) hook this when the volume will be implemented
 		mediaPlayer.setVolume(volume);
+	}
+
+	public void setMute(final boolean newMute) {
+		mediaPlayer.setMute(newMute);
+	}
+
+	public boolean isMute() {
+		return mediaPlayer.getMute();
 	}
 
 	boolean isPlaying() {

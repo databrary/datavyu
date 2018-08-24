@@ -1115,7 +1115,7 @@
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-plugin</artifactId>
-            <version>0.18-20180813.231635-35</version>
+            <version>0.18-20180824.203202-44</version>
         </dependency>
 
         <!-- Updates with JRE from java version >= 1.7 -->
