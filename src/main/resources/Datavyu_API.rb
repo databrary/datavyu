@@ -59,6 +59,7 @@ end
 # Set $db, this is so that JRuby doesn't decide to overwrite it halfway thru the script.
 $db = Datavyu.get_project_controller.get_data_store
 $pj = Datavyu.get_project_controller.get_project
+$sp = Datavyu.get_view()
 
 # Ruby representation of a spreadsheet cell.
 # Generally, the two ways to get access to a cell are:
@@ -2721,6 +2722,39 @@ def get_datavyu_version
   return org.datavyu.util.DatavyuVersion.getLocalVersion.getVersion
 end
 alias :getDatavyuVersion :get_datavyu_version
+
+# Move a column to the desired destination.
+# Pass in list, show only those columns, in that order
+# List can be of vars or strings
+# @param column_list [Array(String)] The list of columns that we want to show, in the order we want them shown.
+def set_column_order(column_list)
+  if column_list.instance_of?(Array) and column_list.length > 0
+    for col in column_list.reverse
+      i = column_list.index(col)
+      if !col.instance_of?(String)
+        col = col.get_column_name()
+      end
+      vars = $sp.get_spreadsheet_panel().get_columns()
+      for j in 0...vars.size()
+        if vars[j].get_column_name() == col
+          $sp.get_spreadsheet_panel().shuffle_column(j, i)
+        end
+      end
+
+
+    end
+  end
+
+  # Now get all variables, and if they are not in column list, hide them
+  vars = $sp.get_spreadsheet_panel().get_columns()
+  for v in vars
+    if column_list.include?(v.get_column_name())
+      v.set_visible(true)
+    else
+      v.set_visible(false)
+    end
+  end
+end
 
 # Check whether current Datavyu version falls within the specified minimum and maximum versions (inclusive)
 # @param minVersion [String] Minimum version (e.g. 'v:1.3.5')
