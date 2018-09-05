@@ -1186,7 +1186,6 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void setCellOffsetAction() {
         logger.info("Set cell offset");
-        clockTimer.setForceTime((long) clockTimer.getStreamTime());
         new SetSelectedCellStopTimeController(getCurrentTime());
         setOffsetField(getCurrentTime());
     }
@@ -1422,6 +1421,7 @@ public final class VideoController extends DatavyuDialog
         } else {
             logger.info("Pause: Stop isPlaying at rate: " + clockTimer.getRate());
             clockTimer.stop();
+            clockTimer.setForceTime((long) clockTimer.getStreamTime());
             labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(clockTimer.getRate())  + "]");
         }
     }
@@ -1433,6 +1433,7 @@ public final class VideoController extends DatavyuDialog
     public void stopAction() {
         logger.info("Stop.");
         clockTimer.setRate(0f);
+        clockTimer.setForceTime((long) clockTimer.getStreamTime());
     }
 
     /**
