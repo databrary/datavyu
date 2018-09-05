@@ -166,6 +166,9 @@ public class JfxApplication extends Application {
                 scene.setFill(Color.BLACK);
 
                 primaryStage.setScene(scene);
+                double aspectRatio = ((double) m.getHeight()) / m.getWidth();
+                primaryStage.minHeightProperty().bind(scene.widthProperty().multiply(aspectRatio));
+                primaryStage.maxHeightProperty().bind(scene.widthProperty().multiply(aspectRatio));
                 primaryStage.setTitle(dataFile.getName());
                 primaryStage.show();
 
