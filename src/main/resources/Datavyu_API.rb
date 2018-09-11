@@ -2728,6 +2728,7 @@ alias :getDatavyuVersion :get_datavyu_version
 # List can be of vars or strings
 # @param column_list [Array(String)] The list of columns that we want to show, in the order we want them shown.
 def set_column_order(*column_list)
+  column_list.flatten!
   if column_list.length > 0
     for col in column_list.reverse
       i = column_list.index(col)
