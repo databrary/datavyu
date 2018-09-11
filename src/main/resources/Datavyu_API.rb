@@ -2750,9 +2750,9 @@ def set_column_order(*column_list)
   vars = $sp.get_spreadsheet_panel().get_columns()
   for v in vars
     if column_list.include?(v.get_column_name())
-      v.set_visible(true)
+      show_columns([v.get_column_name()])
     else
-      v.set_visible(false)
+      hide_columns([v.get_column_name()])
     end
   end
 end
