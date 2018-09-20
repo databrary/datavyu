@@ -338,7 +338,7 @@ class RColumn
   # Validate code name. Remove special characters and replace
   # @param name string to validate
   # @return [String] validated code name
-  # @since 1.3.5
+  # @since 1.3.6
   def self.sanitize_codename(name)
     sanitized = name.gsub(/(\W)+/, "").downcase
     sanitized.gsub(/(^\d{1})/, '_\\1')
@@ -499,7 +499,7 @@ class RColumn
   # @option opts [Integer] :stop_time (latest offset) time to stop resampling at, in milliseconds
   # @return [RColumn] new column with resampled cells
   # @note Undefined behavior for columns whose cells overlap with each other.
-  # @since 1.3.5
+  # @since 1.3.6
   def resample(step, opts={})
     @resample_defaults = {
       :column_name => self.name,
@@ -2444,7 +2444,7 @@ end
 alias :checkValidCodes :check_valid_codes
 
 # Check valid codes on cells in a column using regex. Backwards-compatible with checkValidCodes
-# @since 1.3.5
+# @since 1.3.6
 # @param data [String, RColumn, Hash] When this parameter is a String or a column object from get_column(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Use '' to print to scripting console.
 # @param arg_filt_pairs Pairs of code name and acceptable values either as an array of values or regexp. Ignored if first parameter is a Hash.
@@ -2528,7 +2528,7 @@ end
 alias :checkValidCodes2 :check_valid_codes2
 
 # Check valid codes on cells in a column using regex. Not backwards-compatible with check_valid_codes().
-# @since 1.3.5
+# @since 1.3.6
 # @param map [Hash] The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Omit to print only to console.
 # @return number of detected errors
@@ -2758,7 +2758,7 @@ def set_column_order(*column_list)
 end
 
 # Check whether current Datavyu version falls within the specified minimum and maximum versions (inclusive)
-# @param minVersion [String] Minimum version (e.g. 'v:1.3.5')
+# @param minVersion [String] Minimum version (e.g. 'v:1.3.6')
 # @param maxVersion [String] Maximum version. If unspecified, no upper bound is checked.
 # @return [true, false] true if min,max version check passes; false otherwise.
 def check_datavyu_version(minVersion, maxVersion = nil)
