@@ -2729,20 +2729,15 @@ alias :getDatavyuVersion :get_datavyu_version
 # @param column_list [Array(String)] The list of columns that we want to show, in the order we want them shown.
 def set_column_order(*column_list)
   column_list.flatten!
-  if column_list.length > 0
-    for col in column_list.reverse
-      i = column_list.index(col)
-      if !col.instance_of?(String)
-        col = col.get_column_name()
-      end
-      vars = $sp.get_spreadsheet_panel().get_columns()
-      for j in 0...vars.size()
-        if vars[j].get_column_name() == col
-          $sp.get_spreadsheet_panel().shuffle_column(j, i)
-        end
-      end
+  return if column_list.empty?
 
-
+  # Move the given columns to positions 0..n using shuffle_column()
+  column_list.reverse.each_with_index do |col, i|
+    vars = $sp.get_spreadsheet_panel().get_columns()
+    for j in 0...vars.size()
+      if vars[j].get_column_name() == col
+        $sp.get_spreadsheet_panel().shuffle_column(j, i)
+      end
     end
   end
 
@@ -2750,9 +2745,9 @@ def set_column_order(*column_list)
   vars = $sp.get_spreadsheet_panel().get_columns()
   for v in vars
     if column_list.include?(v.get_column_name())
-      show_columns([v.get_column_name()])
+      show_columns(v.get_column_name())
     else
-      hide_columns([v.get_column_name()])
+      hide_columns(v.get_column_name())
     end
   end
 end
