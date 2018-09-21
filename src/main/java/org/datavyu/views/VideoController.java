@@ -144,6 +144,9 @@ public final class VideoController extends DatavyuDialog
     /** The set of streamViewers associated with this controller */
     private LinkedHashSet<StreamViewer> streamViewers = new LinkedHashSet<>();
 
+    /** List of VideoInfo objects holding information about the filename, plugin */
+    private LinkedHashSet<VideoInfo> videoInfos = new LinkedHashSet<>();
+
     /** Clock timer */
     private final ClockTimer clockTimer = new ClockTimer();
 
@@ -316,7 +319,7 @@ public final class VideoController extends DatavyuDialog
 
     /* Open a video using specified file path and plugin.
         @param filepath Name of video file
-        @param plugin Name of plugin to use (currently short names: jfx, ffmpeg, nativeosx
+        @param plugin Name of plugin to use (current short names: jfx, ffmpeg, nativeosx
      */
     public Identifier openVideo(final String filepath, final String pluginStr) throws FileNotFoundException {
         File videoFile = new File(filepath);
@@ -349,6 +352,10 @@ public final class VideoController extends DatavyuDialog
                             Datavyu.getApplication().getMainFrame(),
                             false);
                     addStream(plugin.getTypeIcon(), streamViewer);
+
+                    // Add this video's information to videoInfos
+                    videoInfos.add(new VideoInfo(id, videoFile, plugin, streamViewer));
+
                     mixerController.bindTrackActions(streamViewer.getIdentifier(), streamViewer.getCustomActions());
                     streamViewer.addViewerStateListener(mixerController.getTracksEditorController()
                             .getViewerStateListener(streamViewer.getIdentifier()));
@@ -597,7 +604,7 @@ public final class VideoController extends DatavyuDialog
      *
      * @return A stream viewer if found otherwise null.
      */
-    private StreamViewer getStreamViewer(final Identifier id) {
+    public StreamViewer getStreamViewer(final Identifier id) {
         for (StreamViewer streamViewer : streamViewers) {
             if (streamViewer.getIdentifier().equals(id)) {
                 return streamViewer;
@@ -1132,6 +1139,11 @@ public final class VideoController extends DatavyuDialog
     public LinkedHashSet<StreamViewer> getStreamViewers() {
         return streamViewers;
     }
+
+    /**
+     * @return set of video info objects.
+     */
+    public LinkedHashSet<VideoInfo> getVideoInfos() { return videoInfos; }
 
     /**
      * Adds a data streamViewer to this data controller.
@@ -1772,5 +1784,24 @@ public final class VideoController extends DatavyuDialog
 
     public ClockTimer getClockTimer() {
         return clockTimer;
+    }
+
+    class VideoInfo{
+        private Identifier id;
+        private File file;
+        private Plugin plugin;
+        private StreamViewer stream;
+
+        private VideoInfo(Identifier id, File file, Plugin plugin, StreamViewer stream){
+            this.id = id;
+            this.file = file;
+            this.plugin = plugin;
+            this.stream = stream;
+        }
+
+       public Identifier getID(){ return id; }
+       public File getFile(){ return file; }
+       public Plugin getPlugin(){ return plugin; }
+       public StreamViewer getStream(){ return stream; }
     }
 }
