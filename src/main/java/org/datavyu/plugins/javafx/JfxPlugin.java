@@ -23,6 +23,7 @@ public class JfxPlugin implements Plugin {
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(
             Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
 
+    private static final String shortName = "jfx";
     private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.jfx".getBytes());
 
     private static final Filter VIDEO_FILTER = new Filter() {
@@ -75,6 +76,9 @@ public class JfxPlugin implements Plugin {
     public String getPluginName() {
         return "JavaFX Video";
     }
+
+    @Override
+    public String getShortName() { return shortName; }
 
     @Override
     public ImageIcon getTypeIcon() {

@@ -23,6 +23,7 @@ public class FFmpegPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> validOperatingSystem = Lists.newArrayList(Datavyu.Platform.WINDOWS);
 
+    private static final String shortName = "ffmpeg";
     private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.ffmpeg".getBytes());
 
     private static final Filter videoFilter = new Filter() {
@@ -65,6 +66,9 @@ public class FFmpegPlugin implements Plugin {
     public String getPluginName() {
         return "FFmpeg Plugin";
     }
+
+    @Override
+    public String getShortName() { return shortName; }
 
     @Override
     public UUID getPluginUUID() {return pluginUUID; }

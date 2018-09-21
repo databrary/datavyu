@@ -61,6 +61,11 @@ public interface Plugin {
     String getPluginName();
 
     /**
+     * @return Plugin short name (without 'plugin.' prefix)
+     */
+    String getShortName();
+
+    /**
      * @return Plugin UUID.
      */
     UUID getPluginUUID();
