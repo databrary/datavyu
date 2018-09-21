@@ -39,6 +39,7 @@ public final class NativeOSXPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.MAC);
 
+    private static final String shortName = "nativeosx";
     private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.nativeosx".getBytes());
 
     private static final Filter VIDEO_FILTER = new Filter() {
@@ -101,6 +102,9 @@ public final class NativeOSXPlugin implements Plugin {
     public String getPluginName() {
         return "Native OSX Video";
     }
+
+    @Override
+    public String getShortName() { return shortName; }
 
     @Override
     public UUID getPluginUUID() {return pluginUUID; }
