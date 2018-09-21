@@ -410,6 +410,8 @@ public final class VideoController extends DatavyuDialog
             }
         }).start();
 
+        // We return the id here so the Ruby API can use it to query other classes for information.
+        // This id should not be used internally since it is not guaranteed to be tied to a valid stream.
         return id;
     }
     /**
