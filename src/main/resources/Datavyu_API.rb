@@ -2816,5 +2816,7 @@ def new_video(filepath, plugin, onset=0, timeout=5)
     sleep(0.5)
   end
 
+  puts "WARNING: added video but timed out trying to set start point." unless success
+  
   return success
 end
