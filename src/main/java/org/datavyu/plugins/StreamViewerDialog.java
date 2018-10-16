@@ -228,6 +228,8 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     protected abstract void setPlayerVolume(float volume);
 
+    protected abstract boolean handleResizeInJava();
+
     protected abstract Dimension getOriginalVideoSize();
 
     /**
@@ -254,6 +256,11 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     @Override
     public void validate() {
+        if(handleResizeInJava()) {
+            int newHeight = getHeight();
+            int newWidth = (int) (getVideoHeight() * getAspectRatio()) + getInsets().left + getInsets().right;
+            setSize(newWidth, newHeight);
+        }
         super.validate();
     }
 

@@ -157,4 +157,9 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
     public boolean isSeekPlaybackEnabled() {
         return false;
     }
+
+    @Override
+    protected boolean handleResizeInJava() {
+        return false;
+    }
 }

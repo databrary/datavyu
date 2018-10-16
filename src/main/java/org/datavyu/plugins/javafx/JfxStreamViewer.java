@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
-import org.datavyu.plugins.*;
+import org.datavyu.plugins.StreamViewerDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -212,5 +212,10 @@ public class JfxStreamViewer extends StreamViewerDialog {
     @Override
     public boolean isSeekPlaybackEnabled() {
         return playBackRate > 2F || playBackRate < 0F;
+    }
+
+    @Override
+    protected boolean handleResizeInJava() {
+        return true;
     }
 }

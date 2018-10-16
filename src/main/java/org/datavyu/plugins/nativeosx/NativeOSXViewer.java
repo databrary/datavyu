@@ -233,4 +233,9 @@ public final class NativeOSXViewer extends StreamViewerDialog {
     public boolean isSeekPlaybackEnabled() {
         return playBackRate > 2F || playBackRate < -2F;
     }
+
+    @Override
+    protected boolean handleResizeInJava() {
+        return true;
+    }
 }
