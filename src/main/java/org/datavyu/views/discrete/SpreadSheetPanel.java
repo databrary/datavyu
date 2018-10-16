@@ -714,7 +714,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
      * @param source      index of the source column
      * @param destination index of the destination column
      */
-    private void shuffleColumn(final int source, final int destination) {
+    public void shuffleColumn(final int source, final int destination) {
         int numCols = columns.size();
         assert (source < numCols && destination < numCols) : String.format("%d and %d must be less than %d", source, destination, numCols);
 

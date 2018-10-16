@@ -28,6 +28,7 @@ import org.datavyu.views.discrete.datavalues.TimeStampDataValueEditor.TimeStampS
 import org.datavyu.views.discrete.datavalues.TimeStampTextField;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.jruby.RubyObject;
 
 import javax.swing.*;
 import javax.swing.Box.Filler;
@@ -36,6 +37,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -277,7 +280,7 @@ public class SpreadsheetCell extends JPanel
     /**
      * Set if onset has been processed. Used in the temporal layout algorithm.
      *
-     * @param onsetProcessed true to mark that the onset has been processed.
+     * @param isOnsetProcessed true to mark that the onset has been processed.
      *                       False otherwise.
      */
     public void setOnsetProcessed(final boolean isOnsetProcessed) {
@@ -662,6 +665,20 @@ public class SpreadsheetCell extends JPanel
                 }
             }
         }
+
+        List<Cell> selectedCells = Datavyu.getProjectController().getDataStore().getSelectedCells();
+        List<Cell> newSelectedCell =  new ArrayList<>();
+
+        if (selectedCells.size() == 0){
+            newSelectedCell.add(model);
+            Datavyu.getProjectController().setLastSelectedCell(model);
+        } else {
+            newSelectedCell =  selectedCells;
+            newSelectedCell.add(model);
+        }
+
+        Datavyu.getProjectController().setLastSelectedCells(newSelectedCell);
+
         model.setSelected(false);
         parentColumn.setSelected(false);
     }

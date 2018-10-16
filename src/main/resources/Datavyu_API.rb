@@ -59,6 +59,7 @@ end
 # Set $db, this is so that JRuby doesn't decide to overwrite it halfway thru the script.
 $db = Datavyu.get_project_controller.get_data_store
 $pj = Datavyu.get_project_controller.get_project
+$sp = Datavyu.get_view()
 
 # Ruby representation of a spreadsheet cell.
 # Generally, the two ways to get access to a cell are:
@@ -337,7 +338,7 @@ class RColumn
   # Validate code name. Remove special characters and replace
   # @param name string to validate
   # @return [String] validated code name
-  # @since 1.3.5
+  # @since 1.3.6
   def self.sanitize_codename(name)
     sanitized = name.gsub(/(\W)+/, "").downcase
     sanitized.gsub(/(^\d{1})/, '_\\1')
@@ -498,7 +499,7 @@ class RColumn
   # @option opts [Integer] :stop_time (latest offset) time to stop resampling at, in milliseconds
   # @return [RColumn] new column with resampled cells
   # @note Undefined behavior for columns whose cells overlap with each other.
-  # @since 1.3.5
+  # @since 1.3.6
   def resample(step, opts={})
     @resample_defaults = {
       :column_name => self.name,
@@ -2443,7 +2444,7 @@ end
 alias :checkValidCodes :check_valid_codes
 
 # Check valid codes on cells in a column using regex. Backwards-compatible with checkValidCodes
-# @since 1.3.5
+# @since 1.3.6
 # @param data [String, RColumn, Hash] When this parameter is a String or a column object from get_column(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Use '' to print to scripting console.
 # @param arg_filt_pairs Pairs of code name and acceptable values either as an array of values or regexp. Ignored if first parameter is a Hash.
@@ -2527,7 +2528,7 @@ end
 alias :checkValidCodes2 :check_valid_codes2
 
 # Check valid codes on cells in a column using regex. Not backwards-compatible with check_valid_codes().
-# @since 1.3.5
+# @since 1.3.6
 # @param map [Hash] The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Omit to print only to console.
 # @return number of detected errors
@@ -2722,8 +2723,37 @@ def get_datavyu_version
 end
 alias :getDatavyuVersion :get_datavyu_version
 
+# Move a column to the desired destination.
+# Pass in list, show only those columns, in that order
+# List can be of vars or strings
+# @param column_list [Array(String)] The list of columns that we want to show, in the order we want them shown.
+def set_column_order(*column_list)
+  column_list.flatten!
+  return if column_list.empty?
+
+  # Move the given columns to positions 0..n using shuffle_column()
+  column_list.reverse.each_with_index do |col, i|
+    vars = $sp.get_spreadsheet_panel().get_columns()
+    for j in 0...vars.size()
+      if vars[j].get_column_name() == col
+        $sp.get_spreadsheet_panel().shuffle_column(j, i)
+      end
+    end
+  end
+
+  # Now get all variables, and if they are not in column list, hide them
+  vars = $sp.get_spreadsheet_panel().get_columns()
+  for v in vars
+    if column_list.include?(v.get_column_name())
+      show_columns(v.get_column_name())
+    else
+      hide_columns(v.get_column_name())
+    end
+  end
+end
+
 # Check whether current Datavyu version falls within the specified minimum and maximum versions (inclusive)
-# @param minVersion [String] Minimum version (e.g. 'v:1.3.5')
+# @param minVersion [String] Minimum version (e.g. 'v:1.3.6')
 # @param maxVersion [String] Maximum version. If unspecified, no upper bound is checked.
 # @return [true, false] true if min,max version check passes; false otherwise.
 def check_datavyu_version(minVersion, maxVersion = nil)
@@ -2763,4 +2793,28 @@ def show_columns(*names)
   names.flatten!
   valid_names = names & get_column_list
   valid_names.each{ |x| $db.getVariable(x).setHidden(false) }
+end
+
+# Add a video to the current spreadsheet/controller.
+# @param filepath [String] path to the file
+# @param plugin [String] short name of plugin to load video with; currently supprots jfx, nativeosx, ffmpeg
+# @param onset [Integer] start point of video in milliseconds
+# @param timeout [Integer] seconds to wait for the video to load up
+# @return [True, False] true if filepath and plugin are valid, false otherwise
+# @since 1.4.2
+def new_video(filepath, plugin, onset=0, timeout=5)
+  id = Datavyu.getVideoController.openVideo(filepath, plugin)
+  return false if id.nil?
+
+  success = false
+  # Attempt to set track offset until timeout
+  tracks = Datavyu.getVideoController.getMixerController.getTracksEditorController
+  t = Time.now
+  while (Time.now - t).to_f < timeout
+    success = tracks.setTrackOffset(id, onset)
+    break if success
+    sleep(0.5)
+  end
+
+  return success
 end

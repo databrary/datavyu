@@ -22,6 +22,7 @@ import java.util.List;
 
 
 // TODO: What does JFC stand for?  Explain or write it out.
+// Java File Chooser?
 public abstract class BaseJFC extends PluginChooser {
     protected JComboBox pluginsBox;
     protected List<PluginCallback> plugins = Lists.newArrayList();

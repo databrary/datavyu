@@ -14,9 +14,6 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
     /** The logger for this class */
     private static Logger logger = LogManager.getFormatterLogger(FFmpegStreamViewer.class);
 
-    /** Previous setCurrentTime time */
-    private long previousSeekTime = -1;
-
     /** The player this viewer is displaying */
     private FFmpegPlayer player;
 
@@ -26,8 +23,7 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
     FFmpegStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         logger.info("Opening file: " + sourceFile.getAbsolutePath());
-        player = new FFmpegPlayer(this);
-        player.openFile(sourceFile.getAbsolutePath());
+        player = new FFmpegPlayer(this, sourceFile);
         setSourceFile(sourceFile);
     }
 
@@ -50,8 +46,6 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
 
     @Override
     protected Dimension getOriginalVideoSize() {
-        Dimension videoSize = player.getOriginalVideoSize();
-        logger.info("The original video size: " + videoSize);
         return player.getOriginalVideoSize();
     }
 
@@ -68,7 +62,7 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
                     });
                 }
             } catch (Exception e) {
-                logger.error("Unable to find", e);
+                logger.error("Unable to set time to " + time + " milliseconds, due to error: ", e);
             }
         });
     }
@@ -95,6 +89,11 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
     public void setRate(float speed) {
         launch(() -> {
             playBackRate = speed;
+            if(isSeekPlaybackEnabled()){
+                player.setMute(true);
+            }else{
+                player.setMute(false);
+            }
             if (speed == 0) {
                 player.stop();
             } else {
@@ -145,7 +144,7 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
 
     @Override
     public boolean isStepEnabled() {
-        return true;
+        return false;
     }
 
     @Override
@@ -154,9 +153,9 @@ public class FFmpegStreamViewer extends StreamViewerDialog {
     }
 
     @Override
-    public boolean isSeekPlaybackEnabled() {
-        return false;
-    }
+    public boolean isSeekPlaybackEnabled() { return playBackRate > 1F
+                                                || playBackRate < 0F
+                                                || (playBackRate > 0F && playBackRate < 1F); }
 
     @Override
     protected boolean handleResizeInJava() {
