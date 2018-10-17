@@ -50,6 +50,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
@@ -141,7 +142,7 @@ public final class VideoController extends DatavyuDialog
     private boolean shiftMask = false;
 
     /** The set of streamViewers associated with this controller */
-    private Set<StreamViewer> streamViewers = new LinkedHashSet<>();
+    private LinkedHashSet<StreamViewer> streamViewers = new LinkedHashSet<>();
 
     /** Clock timer */
     private final ClockTimer clockTimer = new ClockTimer();
@@ -306,22 +307,51 @@ public final class VideoController extends DatavyuDialog
      *
      * @param chooser The plugin chooser used to open the data source.
      */
-    private void openVideo(final PluginChooser chooser) {
+    private Identifier openVideo(final PluginChooser chooser) {
         final Plugin plugin = chooser.getSelectedPlugin();
         final File selectedFile = chooser.getSelectedFile();
 
+        return openVideo(selectedFile, plugin);
+    }
+
+    /* Open a video using specified file path and plugin.
+        @param filepath Name of video file
+        @param plugin Name of plugin to use (currently short names: jfx, ffmpeg, nativeosx
+     */
+    public Identifier openVideo(final String filepath, final String pluginStr) throws FileNotFoundException {
+        File videoFile = new File(filepath);
+        if(!videoFile.exists()){
+            logger.error("Cannot find file: " + filepath);
+            return null;
+        }
+
+        Plugin plugin = PluginManager.getInstance().getPluginFromShortName(pluginStr);
+        if(plugin == null ){
+            logger.error("Cannot find plugin: " + pluginStr);
+            return null;
+        }
+
+        return openVideo(videoFile, plugin);
+    }
+
+    /** Open video file using given plugin.
+     * @param videoFile Video file.
+     * @param plugin Plugin to open with.
+     */
+    public Identifier openVideo(final File videoFile, final Plugin plugin){
+        Identifier id = Identifier.generateIdentifier();
         new Thread(() -> {
             if (plugin != null) {
                 try {
                     StreamViewer streamViewer = plugin.getNewStreamViewer(
-                            Identifier.generateIdentifier(),
-                            selectedFile,
+                            id,
+                            videoFile,
                             Datavyu.getApplication().getMainFrame(),
                             false);
                     addStream(plugin.getTypeIcon(), streamViewer);
                     mixerController.bindTrackActions(streamViewer.getIdentifier(), streamViewer.getCustomActions());
                     streamViewer.addViewerStateListener(mixerController.getTracksEditorController()
-                                    .getViewerStateListener(streamViewer.getIdentifier()));
+                            .getViewerStateListener(streamViewer.getIdentifier()));
                 } catch (Throwable t) {
                     logger.error(t);
 
@@ -372,8 +402,9 @@ public final class VideoController extends DatavyuDialog
                 }
             }
         }).start();
-    }
 
+        return id;
+    }
     /**
      * Tells the Data Controller if shift is being held or not.
      *
@@ -1098,7 +1129,7 @@ public final class VideoController extends DatavyuDialog
      *
      * @return a set of StreamViewers.
      */
-    public Set<StreamViewer> getStreamViewers() {
+    public LinkedHashSet<StreamViewer> getStreamViewers() {
         return streamViewers;
     }
 
@@ -1155,7 +1186,6 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void setCellOffsetAction() {
         logger.info("Set cell offset");
-        clockTimer.setForceTime((long) clockTimer.getStreamTime());
         new SetSelectedCellStopTimeController(getCurrentTime());
         setOffsetField(getCurrentTime());
     }
@@ -1391,6 +1421,7 @@ public final class VideoController extends DatavyuDialog
         } else {
             logger.info("Pause: Stop isPlaying at rate: " + clockTimer.getRate());
             clockTimer.stop();
+            clockTimer.setForceTime((long) clockTimer.getStreamTime());
             labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(clockTimer.getRate())  + "]");
         }
     }
@@ -1402,6 +1433,7 @@ public final class VideoController extends DatavyuDialog
     public void stopAction() {
         logger.info("Stop.");
         clockTimer.setRate(0f);
+        clockTimer.setForceTime((long) clockTimer.getStreamTime());
     }
 
     /**

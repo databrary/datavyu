@@ -250,6 +250,20 @@ public final class TracksEditorController implements TrackMouseEventListener {
     }
 
     /**
+     * Non-snap version.
+     * @param trackID id of data track
+     * @param newOffset new offset(onset) value
+     * @return true if track exists
+     */
+    public boolean setTrackOffset(final Identifier trackID, final long newOffset){
+        TrackController trackController = tracks.get(trackID);
+        if(trackController == null)
+            return false;
+        trackController.setTrackOffset(newOffset);
+        return true;
+    }
+
+    /**
      * Naive snap algorithm:
      * <ol>
      * <li>Compile a list of snap points for the given track.</li>

@@ -5,7 +5,7 @@
     <groupId>org.datavyu</groupId>
     <artifactId>datavyu</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.2-SNAPSHOT</version>
     <name>Datavyu</name>
     <url>http://datavyu.org</url>
 
@@ -283,6 +283,20 @@
             <layout>default</layout>
         </repository>
 
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>libs-release</name>
+            <url>https://projects.databrary.org/artifactory/libs-release</url>
+        </repository>
+        <repository>
+            <snapshots />
+            <id>snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://projects.databrary.org/artifactory/libs-snapshot</url>
+        </repository>
     </repositories>
 
     <!-- External plugin repositories - where to find third-part dependencies. -->
@@ -303,6 +317,21 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
+        </pluginRepository>
+
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>libs-release</name>
+            <url>https://projects.databrary.org/artifactory/libs-release</url>
+        </pluginRepository>
+        <pluginRepository>
+            <snapshots />
+            <id>snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://projects.databrary.org/artifactory/libs-snapshot</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -1072,14 +1101,21 @@
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-libs</artifactId>
-            <version>0.4</version>
+            <version>0.5</version>
         </dependency>
 
-        <!-- This is a beta version of the FFmpeg plugin 0.17-SNAPSHOT -->
+        <!-- SDl 2.0.8 -->
+        <dependency>
+            <groupId>datavyu</groupId>
+            <artifactId>sdl-libs</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <!-- This is a beta version of the FFmpeg plugin 0.18-SNAPSHOT -->
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-plugin</artifactId>
-            <version>0.17</version>
+            <version>0.18-20180824.203202-44</version>
         </dependency>
 
         <!-- Updates with JRE from java version >= 1.7 -->

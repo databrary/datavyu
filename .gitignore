@@ -1,6 +1,7 @@
 lib/
 target
 test.txtDB
+*.pdb
 *.dll
 *.log
 *.DS_Store

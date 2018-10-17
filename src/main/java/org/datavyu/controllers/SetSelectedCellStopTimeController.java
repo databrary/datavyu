@@ -23,6 +23,7 @@ import org.datavyu.undoableedits.ChangeCellEdit;
 import org.datavyu.undoableedits.ChangeOffsetCellEdit;
 
 import javax.swing.undo.UndoableEdit;
+import java.util.List;
 
 /**
  * Controller for setting all selected cells to have the specified stop time / offset.
@@ -42,8 +43,15 @@ public class SetSelectedCellStopTimeController {
 
         // Get the dataStore that we are manipulating.
         DataStore dataStore = Datavyu.getProjectController().getDataStore();
+        List<Cell> selectedCells;
 
-        for (Cell cell : dataStore.getSelectedCells()) {
+        if(dataStore.getSelectedCells().size() == 0){
+            selectedCells = Datavyu.getProjectController().getLastSelectedCells();
+        }else{
+            selectedCells = dataStore.getSelectedCells();
+        }
+
+        for (Cell cell : selectedCells) {
             // record the effect
             UndoableEdit edit = new ChangeOffsetCellEdit(cell, cell.getOffset(), milliseconds,
                     ChangeCellEdit.Granularity.FINEGRAINED);

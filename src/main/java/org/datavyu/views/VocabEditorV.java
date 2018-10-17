@@ -24,6 +24,8 @@ import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
 import org.datavyu.undoableedits.AddVariableEdit;
 import org.datavyu.undoableedits.RemoveVariableEdit;
+import org.datavyu.views.discrete.SpreadSheetPanel;
+import org.datavyu.views.discrete.SpreadsheetColumn;
 import org.datavyu.views.discrete.datavalues.vocabelements.FormalArgEditor;
 import org.datavyu.views.discrete.datavalues.vocabelements.VocabElementV;
 import org.jdesktop.application.Action;
@@ -84,6 +86,8 @@ public final class VocabEditorV extends DatavyuDialog {
     private JLabel statusBar;
     private JSeparator statusSeperator;
     private JLabel nameWarningsLabel;
+    private JButton moveVariableUpButton;
+    private JButton moveVariableDownButton;
 
     private java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/datavyu/views/resources/VocabEditorV");
 
@@ -303,6 +307,50 @@ public final class VocabEditorV extends DatavyuDialog {
     }
 
     /**
+     * The action to invoke when the user clicks the move variable up button.
+     */
+    @Action
+    public void moveVariableUp(){
+        LOGGER.error("vocEd - move column up");
+        Variable var = selectedVocabElement.getVariable();
+        VocabElementV v = selectedVocabElement;
+        int idx = getVocabElements().indexOf(v);
+        if(idx > 0) {
+            SpreadSheetPanel sp = Datavyu.getView().getSpreadsheetPanel();
+            Variable varToSwap = getVocabElements().get(idx-1).getVariable();
+            sp.moveColumn(var, varToSwap);
+            makeElements();
+            for(VocabElementV vev : getVocabElements()) {
+                if(vev.getVariable() == var) {
+                    vev.requestFocus();
+                }
+            }
+        }
+    }
+
+    /**
+     * The action to invoke when the user clicks the move variable up button.
+     */
+    @Action
+    public void moveVariableDown(){
+        LOGGER.error("vocEd - move column up");
+        Variable var = selectedVocabElement.getVariable();
+        VocabElementV v = selectedVocabElement;
+        int idx = getVocabElements().indexOf(v);
+        if(idx < getVocabElements().size() - 1) {
+            SpreadSheetPanel sp = Datavyu.getView().getSpreadsheetPanel();
+            Variable varToSwap = getVocabElements().get(idx+1).getVariable();
+            sp.moveColumn(var, varToSwap);
+            makeElements();
+            for(VocabElementV vev : getVocabElements()) {
+                if(vev.getVariable() == var) {
+                    vev.requestFocus();
+                }
+            }
+        }
+    }
+
+    /**
      * The action to invoke when the user clicks on the add code button.
      */
     @Action
@@ -454,9 +502,6 @@ public final class VocabEditorV extends DatavyuDialog {
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
                 .getResourceMap(VocabEditorV.class);
 
-        //boolean containsC = false;
-//        selectedVocabElement = null;
-//        selectedArgument = null;
 
         for (VocabElementV vev : veViews) {
             // A vocab element has focus - enable certain things.
@@ -475,28 +520,25 @@ public final class VocabEditorV extends DatavyuDialog {
             //    containsC = true;
             //}
         }
-/*New
-        if (containsC) {
-            closeButton.setText(rMap.getString("closeButton.cancelText"));
-            closeButton.setToolTipText(rMap.getString("closeButton.cancelTip"));
 
-        } else {
-            closeButton.setText(rMap.getString("closeButton.cancelText"));
-            closeButton.setToolTipText(rMap.getString("closeButton.cancelTip"));
-        }
-*/
+        if(selectedVocabElement != null) {
+            int selectedVocabI = getVocabElements().indexOf(selectedVocabElement);
+            if (selectedVocabI > 0) {
+                moveVariableUpButton.setEnabled(true);
+            } else {
+                moveVariableUpButton.setEnabled(false);
+            }
 
-        // If we have a selected vocab element - we can enable additional
-        // functionality.
-/*
-        if (selectedVocabElement != null) {
-            addCodeButton.setEnabled(true);
-            deleteButton.setEnabled(true);
+            if (selectedVocabI < getVocabElements().size() - 1) {
+                moveVariableDownButton.setEnabled(true);
+            } else {
+                moveVariableDownButton.setEnabled(false);
+            }
         } else {
-            addCodeButton.setEnabled(false);
-            deleteButton.setEnabled(false);
+            moveVariableUpButton.setEnabled(false);
+            moveVariableDownButton.setEnabled(false);
         }
-*/
+
         if (selectedArgument != null) {
 
             // W00t - argument is selected - populate the index so that the user
@@ -539,6 +581,8 @@ public final class VocabEditorV extends DatavyuDialog {
         statusSeperator = new javax.swing.JSeparator();
         jLabel1 = new javax.swing.JLabel();
         nameWarningsLabel = new javax.swing.JLabel();
+        moveVariableDownButton = new javax.swing.JButton();
+        moveVariableUpButton = new javax.swing.JButton();
 
         jScrollPane1.setName("jScrollPane1");
 
@@ -608,6 +652,34 @@ public final class VocabEditorV extends DatavyuDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         getContentPane().add(moveCodeRightButton, gridBagConstraints);
 
+        moveVariableUpButton.setAction(actionMap.get("moveVariableUp"));
+        moveVariableUpButton.setIcon(resourceMap.getIcon("moveVariableUpButton.icon"));
+        moveVariableUpButton.setText(bundle.getString("moveVariableUpButton.text"));
+        moveVariableUpButton.setToolTipText(bundle.getString("moveVariableUpButton.tip"));
+        moveVariableUpButton.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        moveVariableUpButton.setName("moveVariableUp");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        getContentPane().add(moveVariableUpButton, gridBagConstraints);
+
+        moveVariableDownButton.setAction(actionMap.get("moveVariableDown"));
+        moveVariableDownButton.setIcon(resourceMap.getIcon("moveVariableDownButton.icon"));
+        moveVariableDownButton.setText(bundle.getString("moveVariableDownButton.text"));
+        moveVariableDownButton.setToolTipText(bundle.getString("moveVariableDownButton.tip"));
+        moveVariableDownButton.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        moveVariableDownButton.setName("moveVariableDown");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        getContentPane().add(moveVariableDownButton, gridBagConstraints);
+
         deleteButton.setAction(actionMap.get("delete"));
         deleteButton.setText(bundle.getString("deleteButton.text"));
         deleteButton.setToolTipText(bundle.getString("deleteButton.tip"));
@@ -628,7 +700,7 @@ public final class VocabEditorV extends DatavyuDialog {
         currentVocabList.setPreferredSize(new java.awt.Dimension(200, 200));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
@@ -643,7 +715,7 @@ public final class VocabEditorV extends DatavyuDialog {
         nameWarningsLabel.setHorizontalAlignment(SwingConstants.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 6;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -656,7 +728,7 @@ public final class VocabEditorV extends DatavyuDialog {
         closeButton.setName("closeButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         getContentPane().add(closeButton, gridBagConstraints);
@@ -670,7 +742,7 @@ public final class VocabEditorV extends DatavyuDialog {
         statusBar.setName("statusBar");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -682,7 +754,7 @@ public final class VocabEditorV extends DatavyuDialog {
         statusSeperator.setPreferredSize(new java.awt.Dimension(2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -746,6 +818,8 @@ public final class VocabEditorV extends DatavyuDialog {
         addCodeButton.addMouseListener(ma);
         moveCodeLeftButton.addMouseListener(ma);
         moveCodeRightButton.addMouseListener(ma);
+        moveVariableDownButton.addMouseListener(ma);
+        moveVariableUpButton.addMouseListener(ma);
 
     }
 
