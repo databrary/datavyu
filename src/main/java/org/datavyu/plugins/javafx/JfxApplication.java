@@ -18,13 +18,10 @@ import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.nativeosx.NativeOSXPlayer;
 import org.datavyu.util.FrameRate;
 import org.datavyu.views.VideoController;
 
-import java.awt.*;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class JfxApplication extends Application {
 
@@ -159,15 +156,21 @@ public class JfxApplication extends Application {
 
                 mv.setPreserveRatio(true);
 
+
                 StackPane root = new StackPane();
                 root.getChildren().add(mv);
 
-                final Scene scene = new Scene(root, 960, 540);
+                final Scene scene = new Scene(root, mp.getMedia().getWidth(), mp.getMedia().getHeight());
                 scene.setFill(Color.BLACK);
 
                 primaryStage.setScene(scene);
                 primaryStage.setTitle(dataFile.getName());
                 primaryStage.show();
+
+                double aspect = ((double)mp.getMedia().getWidth()) / mp.getMedia().getHeight();
+                System.out.println(aspect);
+                stage.minWidthProperty().bind(stage.heightProperty().multiply(aspect));
+                stage.maxWidthProperty().bind(stage.heightProperty().multiply(aspect));
 
                 init = true;
                 handler();
