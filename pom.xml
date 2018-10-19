@@ -1104,13 +1104,14 @@
             <version>0.5</version>
         </dependency>
 
-        <!-- SDl 2.0.8 -->
+        <!-- SDL 2.0.8 -->
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>sdl-libs</artifactId>
             <version>0.1</version>
         </dependency>
 
+        <!-- MPV 0.29.1 -->
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>mpv-libs</artifactId>
