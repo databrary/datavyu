@@ -1,17 +1,3 @@
-/**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package org.datavyu.models.db;
 
 import org.testng.annotations.AfterMethod;
@@ -21,11 +7,13 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.Assert.*;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.project.Project;
 import static org.mockito.Mockito.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests for the Variable Interface
@@ -50,7 +38,7 @@ public class VariableTest {
     public void setUp() throws UserWarningException {
         ds = DataStoreFactory.newDataStore();
         Datavyu.setProjectController(new ProjectController(new Project(), ds));        
-        model = (DatavyuVariable) ds.createVariable("test", Argument.Type.TEXT);
+        model = ds.createVariable("test", Argument.Type.TEXT);
         modelListener = mock(VariableListener.class);
         model.addListener(modelListener);
         ds.markAsUnchanged();
@@ -93,7 +81,7 @@ public class VariableTest {
 
     @Test
     public void testIsSelected() {
-        List<Variable> vars = new ArrayList<Variable>();
+        List<Variable> vars = new ArrayList<>();
         vars.add(model);
         assertTrue(model.isSelected());
         assertEquals(ds.getSelectedVariables(), vars);
@@ -113,7 +101,7 @@ public class VariableTest {
 
     @Test
     public void testCreateCell() {
-        List<Cell> cells = new ArrayList<Cell>();
+        List<Cell> cells = new ArrayList<>();
         assertFalse(ds.isChanged());
         Cell c = model.createCell();
         assertTrue(ds.isChanged());
@@ -165,8 +153,8 @@ public class VariableTest {
 
     @Test
     public void testTemporalOrder() {
-        List<Cell> cells = new ArrayList<Cell>();
-        List<Cell> orderedCells = new ArrayList<Cell>();
+        List<Cell> cells = new ArrayList<>();
+        List<Cell> orderedCells = new ArrayList<>();
         Cell c1 = model.createCell();
         Cell c2 = model.createCell();
 

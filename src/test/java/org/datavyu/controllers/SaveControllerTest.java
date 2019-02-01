@@ -1,17 +1,3 @@
-/**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package org.datavyu.controllers;
 
 import org.apache.commons.io.IOUtils;
@@ -23,7 +9,7 @@ import org.testng.annotations.Test;
 
 import java.io.*;
 
-import static junit.framework.Assert.assertTrue;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests for saving Datavyu project and CSV files.
@@ -44,7 +30,7 @@ public class SaveControllerTest {
      * @return True if they are equal; otherwise false
      * @throws IOException exception
      */
-    public static Boolean areFilesSameByteComp(final File file1, final File file2) throws IOException {
+    private static Boolean areFilesSameByteComp(final File file1, final File file2) throws IOException {
 
         // Check file sizes first
         if (file1.length() != file2.length()) {
@@ -78,7 +64,7 @@ public class SaveControllerTest {
      * @return true if equal, else false
      * @throws IOException on file read error
      */
-    public static Boolean areFilesSameLineComp(final File file1, final File file2) throws IOException {
+    private static Boolean areFilesSameLineComp(final File file1, final File file2) throws IOException {
         FileReader fr1 = new FileReader(file1);
         FileReader fr2 = new FileReader(file2);
 
@@ -124,7 +110,7 @@ public class SaveControllerTest {
         File outFile = new File("target/test1.csv");
         // Clean up the out file only if it exists.
         if (outFile.exists()) {
-            outFile.delete();
+            boolean deleted = outFile.delete();
         }
         File demoFile = new File(TEST_FOLDER + "IO/simple1.csv");
 
@@ -145,7 +131,7 @@ public class SaveControllerTest {
     public void testLoadOPF() throws UserWarningException, IOException {
         File outFile = new File("target/test2.opf");
         if (outFile.exists()) {
-            outFile.delete();
+            boolean deleted = outFile.delete();
         }
         File demoFile = new File(TEST_FOLDER + "IO/simple2.opf");
 
@@ -169,7 +155,7 @@ public class SaveControllerTest {
     public void testLoadOPF2() throws UserWarningException, IOException {
         File outFile = new File("target/test3.opf");
         if (outFile.exists()) {
-            outFile.delete();
+            boolean deleted = outFile.delete();
         }
         File demoFile = new File(TEST_FOLDER + "IO/simple3.opf");
 
