@@ -1,6 +1,7 @@
 package org.datavyu.controllers;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.db.Argument;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.DataStore;
@@ -10,24 +11,27 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests for opening Datavyu project and CSV files.
  */
 public class OpenControllerTest {
+    Logger logger;
 
-    // The location of the test files.
-    private static final String TEST_FOLDER = System.getProperty("testPath");
+    private static final String TEST_FOLDER = "src/test/resources/";
 
     @BeforeClass
     public void spinUp() {
-        LogManager.getLogger();
+        logger = LogManager.getLogger();
+        logger.debug("Test folder: " + TEST_FOLDER);
+        File testFolder = new File(TEST_FOLDER);
+        assertTrue(testFolder.exists());
     }
+
 
     @AfterClass
     public void spinDown() {
@@ -36,6 +40,7 @@ public class OpenControllerTest {
     @Test
     public void testLoadCSV() {
         File demoFile = new File(TEST_FOLDER + "IO/simple1.csv");
+        logger.debug(TEST_FOLDER + "IO/simple1.csv");
         OpenController openc = new OpenController();
         openc.openDataStore(demoFile);
 
