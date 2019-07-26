@@ -2660,7 +2660,7 @@ alias :getOS :get_os
 # Return Datavyu version string.
 # @return [String] Version string in the fromat "v.:#.#"
 def get_datavyu_version
-  return org.datavyu.util.DatavyuVersion.getLocalVersion.getVersion
+  return org::datavyu::util::DatavyuVersion.getLocalVersion.getVersion
 end
 alias :getDatavyuVersion :get_datavyu_version
 
