@@ -21,6 +21,7 @@ import org.jdesktop.application.LocalStorage;
 
 import java.awt.*;
 import java.io.*;
+import java.util.function.Consumer;
 
 /**
  * Configuration properties that are loaded from the settings.xml file in the resource folder.
@@ -254,15 +255,15 @@ public final class ConfigProperties implements Serializable {
             configurationProperties.setLastChosenDirectory(DEFAULT_LAST_CHOSEN_DIRECTORY);
         }
         try {
-            Font defaultFont = Font.createFont(Font.TRUETYPE_FONT,
-                    configurationProperties.getClass().getResourceAsStream(Constants.DEFAULT_FONT_FILE));
-            Font defaultCellFont = Font.createFont(Font.TRUETYPE_FONT,
-                    configurationProperties.getClass().getResourceAsStream(Constants.DEFAULT_CELL_FONT_FILE));
-            configurationProperties.setSpreadSheetDataFont(defaultCellFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
-//            configurationProperties.setSpreadSheetDataFont(defaultFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
-            configurationProperties.setSpreadSheetLabelFont(defaultFont.deriveFont(DEFAULT_LABEL_FONT_SIZE));
+            loadFont(Constants.DEFAULT_FONT_FILE, (font) -> {
+                configurationProperties.setSpreadSheetLabelFont(font.deriveFont(DEFAULT_LABEL_FONT_SIZE));
+                //configurationProperties.setSpreadSheetDataFont(font.deriveFont(DEFAULT_DATA_FONT_SIZE));
+            });
+            loadFont(Constants.DEFAULT_CELL_FONT_FILE, (font) -> {
+                configurationProperties.setSpreadSheetDataFont(font.deriveFont(DEFAULT_DATA_FONT_SIZE));
+            });
         } catch (Exception e) {
-            logger.error("Error, unable to load font " + Constants.DEFAULT_FONT_FILE + ". The error is " + e);
+            logger.error(e.toString());
         }
 
         // In all cases save this setting for the next run
@@ -283,6 +284,15 @@ public final class ConfigProperties implements Serializable {
      */
     public static ConfigProperties getInstance() {
         return configurationProperties;
+    }
+
+    private static void loadFont(String fontPath, Consumer<Font> consumer) throws Exception {
+        try {
+            consumer.accept(Font.createFont(Font.TRUETYPE_FONT,
+                    configurationProperties.getClass().getResourceAsStream(fontPath)));
+        } catch (Exception e) {
+            throw new Exception("Error, unable to load font " + fontPath, e);
+        }
     }
 
     /**

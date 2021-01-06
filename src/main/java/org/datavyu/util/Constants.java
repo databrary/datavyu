@@ -44,7 +44,7 @@ public final class Constants {
     public static final String DEFAULT_FONT_FILE = "/fonts/DejaVuSansCondensed.ttf";
 
     /** Cell Unicode Font file name */
-    public static final String DEFAULT_CELL_FONT_FILE = "/fonts/unifont.ttf";
+    public static final String DEFAULT_CELL_FONT_FILE = "/fonts/unifont-10.0.07.ttf";
 
     /** Buffer size when copying files from streams */
     public static final int BUFFER_COPY_SIZE = 16*1024; // 16 kB
