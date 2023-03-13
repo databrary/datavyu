@@ -182,7 +182,7 @@ public final class UIImageUtils {
         } catch (AWTException e) {
             logger.error("Screen capture failed. Error: ", e);
         } catch (IOException e) {
-            logger.error("Screen catpure failed due to IO. Error: ", e);
+            logger.error("Screen capture failed due to IO. Error: ", e);
         }
     }
 
@@ -271,7 +271,7 @@ public final class UIImageUtils {
     }
 
     /**
-     * Captures screenshot of component nd returns as BufferedImage.
+     * Captures screenshot of component and returns as BufferedImage.
      *
      * @param component JComponent to capture screenshot
      * @return BufferedImage screenshot of component
@@ -292,7 +292,7 @@ public final class UIImageUtils {
     }
 
     /**
-     * Captures screenshot of component nd returns as BufferedImage.
+     * Captures screenshot of component and returns as BufferedImage.
      *
      * @param frame JComponent to capture screenshot
      * @return BufferedImage screenshot of component

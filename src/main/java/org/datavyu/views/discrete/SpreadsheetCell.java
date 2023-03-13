@@ -223,7 +223,7 @@ public class SpreadsheetCell extends JPanel
         cellPanel.setBorder(NORMAL_BORDER);
         cellPanel.setLayout(new BorderLayout());
 
-        // Set the apperance of the top panel and add child elements (ord, onset
+        // Set the appearance of the top panel and add child elements (ord, onset
         // and offset).
         topPanel.setOpaque(false);
         topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
@@ -243,7 +243,7 @@ public class SpreadsheetCell extends JPanel
         topPanel.add(strut2);
         topPanel.add(offset);
 
-        // Set the apperance of the data panel - add elements for dis6playing
+        // Set the appearance of the data panel - add elements for dis6playing
         // the actual data of the panel.
         cellPanel.add(dataPanel, BorderLayout.CENTER);
 

@@ -114,7 +114,7 @@ public interface StreamViewer {
     void pause();
 
     /**
-     * Steps foward
+     * Steps forward
      */
     void stepForward();
 

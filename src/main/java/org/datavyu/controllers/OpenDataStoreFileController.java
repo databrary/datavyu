@@ -124,7 +124,7 @@ public final class OpenDataStoreFileController {
                     line = parseVariable(csvFile, line, db, "#4");
                 }
                 if (!db.getExemptionVariables().isEmpty()) {
-                    logger.info("We have excemption variables");
+                    logger.info("We have exemption variables");
                     SwingUtilities.invokeLater(new NameWarning(db.getExemptionVariables()));
                 }
             } else if ("#3".equalsIgnoreCase(line)) {
