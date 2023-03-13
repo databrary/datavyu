@@ -565,7 +565,7 @@ end
 # !@attr table
 #   @return [Matrix] contingency table of values
 # !@attr codes
-#   @return [Array<String>] list of code valus; indices serve as keys for table
+#   @return [Array<String>] list of code values; indices serve as keys for table
 class CTable
   attr_accessor :table, :codes
 
@@ -2215,7 +2215,7 @@ def check_reliability(main_col, rel_col, match_arg, time_tolerance, *dump_file)
     printing = true
   end
 
-  # Define interal function for printing errors
+  # Define internal function for printing errors
   def print_err(m_cell, r_cell, arg, dump_file, main_col, rel_col)
     main_val = eval "m_cell.#{arg}"
     rel_val = eval "r_cell.#{arg}"

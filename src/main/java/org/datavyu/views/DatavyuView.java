@@ -1778,7 +1778,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      */
     @Action
     public void hideColumn() {
-        logger.info("Hidding columns");
+        logger.info("Hiding columns");
         List<Variable> selectedVariables = null;
         if(Datavyu.getPlatform() == Platform.WINDOWS && menuMouseEventFlag){
             selectedVariables = Datavyu.getProjectController().getLastSelectedVariables();
