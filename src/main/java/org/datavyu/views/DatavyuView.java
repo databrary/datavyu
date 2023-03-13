@@ -261,7 +261,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         // Set the close accerator to keyMask + 'W';
         closeTabMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, keyMask));
 
-        //Use Datavyu.class key dispatcher to handel CMD+L and CML+R Hotkey
+        //Use Datavyu.class key dispatcher to handle CMD+L and CML+R Hotkey
         // Set the new accelerator to keyMask + 'L';
 //        newCellLeftMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, keyMask));
 

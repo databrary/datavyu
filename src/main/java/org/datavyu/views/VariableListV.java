@@ -205,7 +205,7 @@ public final class VariableListV extends DatavyuDialog
             Variable var = dbToTableMap.inverse().get(row);
 
             if (columnName.equals(rMap.getString("Table.visibleColumn"))) {
-                LOGGER.info("Editied Variable Visbility from VariableList");
+                LOGGER.info("Editied Variable Visibility from VariableList");
 
                 if (var.isHidden() == (Boolean) data) {
                     var.setHidden(!(Boolean) data);

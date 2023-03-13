@@ -182,7 +182,7 @@ public final class UIImageUtils {
         } catch (AWTException e) {
             logger.error("Screen capture failed. Error: ", e);
         } catch (IOException e) {
-            logger.error("Screen catpure failed due to IO. Error: ", e);
+            logger.error("Screen capture failed due to IO. Error: ", e);
         }
     }
 

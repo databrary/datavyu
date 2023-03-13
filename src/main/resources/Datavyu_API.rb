@@ -209,7 +209,7 @@ class RCell
   alias :change_arg :change_code
 
   # Print ordinal, onset, offset, and values of all codes in the cell to console.
-  # @param sep [String] seperator used between the arguments
+  # @param sep [String] separator used between the arguments
   # @return [nil]
   # @example Print the first cell in the 'trial' column
   #       trial = get_column("trial")
@@ -652,7 +652,7 @@ end
 # @param rel_col [RColumn, String] reliability coder's column
 # @param codes [Array<String>] codes to compute scores for
 # @return [Hash<String, Fixnum>] mapping from code names to kappa values
-# @return [Hash<String, Matrix>] mapping fromm code names to contingency tables
+# @return [Hash<String, Matrix>] mapping from code names to contingency tables
 # @example
 #     primary_column_name = 'trial'
 #     reliability_column_name = 'trial_rel'
@@ -928,7 +928,7 @@ alias :setColumn :set_column
 # Deletes a variable from the spreadsheet and rebuilds it from
 # the given RColumn object.
 # Behaves similar to setVariable(), but this will ALWAYS delete
-# and rebuild the spreadsheet colum and its vocab.
+# and rebuild the spreadsheet column and its vocab.
 def set_column!(*args, sanitize_codes: true)
   if args.length == 1
     var = args[0]
@@ -2033,10 +2033,10 @@ end
 # Transfers columns between databases.
 # If db1 or db2 are set to the empty string "", then that database is the current database in $db (usually the GUI's database).
 # So if you want to transfer a column into the GUI, set db2 to "".
-# If you want to tranfer a column from the GUI into a file, set db1 to "".
+# If you want to transfer a column from the GUI into a file, set db1 to "".
 # Setting remove to true will DELETE THE COLUMNS YOU ARE TRANSFERRING FROM DB1.  Be careful!
 # @param db1 [String] The FULL PATH toa Datavyu file or "" to use the currently opened database. Columns are transferred FROM here.
-# @param db2 [String]: The FULL PATH to the saved Datavyu file or "" to use the currently opened database.  Columns are tranferred TO here.
+# @param db2 [String]: The FULL PATH to the saved Datavyu file or "" to use the currently opened database.  Columns are transferred TO here.
 # @param remove [true, false] Set to true to delete columns in DB1 as they are moved to db2.  Set to false to leave them intact.
 # @param varnames [Array<String>] column names (requires at least 1): You can specify as many column names as you like that will be retrieved from db1.
 # @return nil
@@ -2658,7 +2658,7 @@ end
 alias :getOS :get_os
 
 # Return Datavyu version string.
-# @return [String] Version string in the fromat "v.:#.#"
+# @return [String] Version string in the format "v.:#.#"
 def get_datavyu_version
   return org.datavyu.util.DatavyuVersion.getLocalVersion.getVersion
 end

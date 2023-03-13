@@ -25,7 +25,7 @@ begin
     end
 
     # Get min and max times
-    puts "Getting the minimum and maximium times for the files..."
+    puts "Getting the minimum and maximum times for the files..."
     min = 99999999999999
     max = 0
     for col in columns

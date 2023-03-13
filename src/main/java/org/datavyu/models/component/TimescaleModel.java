@@ -107,7 +107,7 @@ public final class TimescaleModel {
     }
 
     /**
-     * Set the height of the transition from teh zoom window to the track
+     * Set the height of the transition from the zoom window to the track
      */
     public void setZoomWindowToTrackTransitionHeight(
             final int zoomWindowToTrackTransitionHeight) {

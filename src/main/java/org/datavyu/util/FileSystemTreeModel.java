@@ -212,7 +212,7 @@ public class FileSystemTreeModel implements TreeModel {
 
 
         /**
-         * Retur a string representation of this node.
+         * Return a string representation of this node.
          * The inherited toString() method returns the entire path.
          * For use in a tree structure, the name is more appropriate.
          *
