@@ -68,10 +68,10 @@ begin
     end
 
     puts "Completed building data.  Writing to file " + output_filename
-    fo = File.new(File.expand_path(output_filename), 'a')
-    fo.write(output)
-    fo.flush()
-    fo.close()
+    output_file = File.new(File.expand_path(output_filename), 'a')
+    output_file.write(output)
+    output_file.flush()
+    output_file.close()
     puts "Finished."
 
 
