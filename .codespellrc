@@ -1,5 +1,5 @@
 [codespell]
-skip = .git,*.pdf,*.svg
+skip = .git,*.pdf,*.svg,*.csv,*.odb
 # testng - module name
 # ans - variable name used
 # ue - used for instance of UndoableEdit
