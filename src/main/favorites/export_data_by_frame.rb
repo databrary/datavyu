@@ -25,7 +25,7 @@ begin
     end
 
     # Get min and max times
-    puts "Getting the minimum and maximium times for the files..."
+    puts "Getting the minimum and maximum times for the files..."
     min = 99999999999999
     max = 0
     for col in columns
@@ -68,10 +68,10 @@ begin
     end
 
     puts "Completed building data.  Writing to file " + output_filename
-    fo = File.new(File.expand_path(output_filename), 'a')
-    fo.write(output)
-    fo.flush()
-    fo.close()
+    output_file = File.new(File.expand_path(output_filename), 'a')
+    output_file.write(output)
+    output_file.flush()
+    output_file.close()
     puts "Finished."
 
 

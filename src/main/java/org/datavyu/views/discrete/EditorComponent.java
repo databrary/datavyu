@@ -468,7 +468,7 @@ public abstract class EditorComponent implements ClipboardOwner {
      * method will simply shift the caret back one spot.
      */
     public final void removeBehindCaret() {
-        // Underlying text field has selection and no carret, simply remove
+        // Underlying text field has selection and no caret, simply remove
         // everything that is selected.
         if ((getSelectionEnd() - getSelectionStart()) > 0) {
             removeSelectedText();

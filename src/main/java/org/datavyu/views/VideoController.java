@@ -1219,7 +1219,7 @@ public final class VideoController extends DatavyuDialog
     private void handleRegionChange(final RegionState region) {
         final long start = region.getRegionStart();
         final long end = region.getRegionEnd();
-        logger.info("Set Region with start " + start + " ane end " + end + " CLock " + clockTimer.getClockTime());
+        logger.info("Set Region with start " + start + " and end " + end + " CLock " + clockTimer.getClockTime());
         clockTimer.setMinTime(start);
         clockTimer.setMaxTime(end);
     }

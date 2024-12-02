@@ -309,7 +309,7 @@ and '&' with 'and'
 # Announcements
 ## 1/20/2015
 
-* Yosemite no longer supports Java QuickTime and so Datavyu is not curently compatible. We apologize for the inconvenience     and advise our users to be aware of the situation before deciding to upgrade to Yosemite.
+* Yosemite no longer supports Java QuickTime and so Datavyu is not currently compatible. We apologize for the inconvenience     and advise our users to be aware of the situation before deciding to upgrade to Yosemite.
 
 * If you try to download Datavyu and receive a pop up saying: "Datavyu is damaged and should be moved to the trash," please    check your security settings to allow the download of the software. Please go to System Preferences/Security/General tab     and then check "Allow apps to be downloaded from: anywhere."
 

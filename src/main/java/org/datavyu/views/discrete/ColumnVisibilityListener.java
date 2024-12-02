@@ -15,7 +15,7 @@
 package org.datavyu.views.discrete;
 
 /**
- * A listener for listening to column visiblity changes
+ * A listener for listening to column visibility changes
  */
 public interface ColumnVisibilityListener {
     

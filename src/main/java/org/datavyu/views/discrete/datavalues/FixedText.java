@@ -33,7 +33,7 @@ public class FixedText extends EditorComponent {
      *
      * @param ta   The Parent JTextComponent that this FixedText editor is nested
      *             within.
-     * @param text The inital text to use for this Fixedtext component.
+     * @param text The initial text to use for this Fixedtext component.
      */
     public FixedText(final JTextComponent ta, final String text) {
         super(ta, text);

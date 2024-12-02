@@ -22,7 +22,7 @@ import java.io.File;
 
 
 /**
- * A file chooser to use within Datavyu - overides the general JFileChooser.
+ * A file chooser to use within Datavyu - overrides the general JFileChooser.
  */
 public final class DatavyuFileChooser extends JFileChooser {
 

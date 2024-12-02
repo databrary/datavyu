@@ -27,7 +27,7 @@ import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.Variable;
 
 /**
- * Cell Transfer Object for holding the changes that need to be transfered from
+ * Cell Transfer Object for holding the changes that need to be transferred from
  * undo / redo states to the datastore.
  */
 public final class CellTO {

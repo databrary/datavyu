@@ -131,7 +131,7 @@ public class WindowsOS {
      *
      * @param brokenChar The broken character code.
      *
-     * @return The remapped character code wich is: brokenChar + 64.
+     * @return The remapped character code which is: brokenChar + 64.
      */
     public static char remapKeyChar(final char brokenChar) {
         return (char) ( ((int)brokenChar) + 64);

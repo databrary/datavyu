@@ -278,12 +278,12 @@ public final class CreateNewCellController {
          * Situation 3: User has set focus on a particular cell in the
          * spreadsheet - the caret is or has been in one of the editable parts
          * of a spreadsheet cell. First check this request has not come from the
-         * video controller. For the focussed cell do Create a new cell with the
-         * focussed cell onset and offset and insert into the db.
+         * video controller. For the focused cell do Create a new cell with the
+         * focused cell onset and offset and insert into the db.
          *
          * Situation 4: Request has come from the video controller and there is
          * no currently selected column. Create a new cell in the same column as
-         * the last created cell or the last focussed cell.
+         * the last created cell or the last focused cell.
          */
         long onset = milliseconds;
 

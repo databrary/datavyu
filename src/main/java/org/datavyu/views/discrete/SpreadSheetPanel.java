@@ -593,7 +593,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
                     if ((newColID >= 0) && (newColID < columns.size())) {
 
-                        // Find the most appopriate cell in the new
+                        // Find the most appropriate cell in the new
                         // column.
                         int newCellID = Math.min(cellID,
                                 (columns.get(newColID).getCells().size() - 1));
